@@ -80,45 +80,57 @@ class HealthboxRoom:
     @property
     def indoor_temperature(self) -> Decimal:
         """HB Indoor Temperature."""
-        for sensor in self.sensors_data:
-            param = sensor.get("parameter")
-            if isinstance(param, dict) and "temperature" in param:
-                temp = param.get("temperature")
-                if isinstance(temp, dict) and "value" in temp:
-                    return temp["value"]
+        try:
+            for sensor in self.sensors_data:
+                param = sensor.get("parameter")
+                if isinstance(param, dict) and "temperature" in param:
+                    temp = param.get("temperature")
+                    if isinstance(temp, dict) and "value" in temp:
+                        return temp["value"]
+        except (TypeError, KeyError, AttributeError):
+            pass
         return None
 
     @property
     def indoor_humidity(self) -> Decimal:
         """HB Indoor Humidity."""
-        for sensor in self.sensors_data:
-            param = sensor.get("parameter")
-            if isinstance(param, dict) and "humidity" in param:
-                hum = param.get("humidity")
-                if isinstance(hum, dict) and "value" in hum:
-                    return hum["value"]
+        try:
+            for sensor in self.sensors_data:
+                param = sensor.get("parameter")
+                if isinstance(param, dict) and "humidity" in param:
+                    hum = param.get("humidity")
+                    if isinstance(hum, dict) and "value" in hum:
+                        return hum["value"]
+        except (TypeError, KeyError, AttributeError):
+            pass
         return None
 
     @property
     def indoor_co2_concentration(self) -> Decimal | None:
         """HB Indoor CO2 Concentration."""
-        for sensor in self.sensors_data:
-            param = sensor.get("parameter")
-            if isinstance(param, dict) and "concentration" in param:
-                conc = param.get("concentration")
-                if isinstance(conc, dict) and "value" in conc:
-                    return conc["value"]
+        try:
+            for sensor in self.sensors_data:
+                param = sensor.get("parameter")
+                if isinstance(param, dict) and "concentration" in param:
+                    conc = param.get("concentration")
+                    if isinstance(conc, dict) and "value" in conc:
+                        return conc["value"]
+        except (TypeError, KeyError, AttributeError):
+            pass
         return None
 
     @property
     def indoor_aqi(self) -> Decimal | None:
         """HB Indoor Air Quality Index."""
-        for sensor in self.sensors_data:
-            param = sensor.get("parameter")
-            if isinstance(param, dict) and "index" in param:
-                idx = param.get("index")
-                if isinstance(idx, dict) and "value" in idx:
-                    return idx["value"]
+        try:
+            for sensor in self.sensors_data:
+                param = sensor.get("parameter")
+                if isinstance(param, dict) and "index" in param:
+                    idx = param.get("index")
+                    if isinstance(idx, dict) and "value" in idx:
+                        return idx["value"]
+        except (TypeError, KeyError, AttributeError):
+            pass
         return None
 
 
@@ -150,12 +162,15 @@ class HealthboxDataObject:
 
     def _get_global_aqi_from_data(self, data: any) -> float | None:
         """Set Global AQI from Data Object."""
-        sensors = data.get("sensor") or []
-        for sensor in sensors:
-            if sensor.get("type") == "global air quality index":
-                param = sensor.get("parameter")
-                if isinstance(param, dict) and "index" in param:
-                    idx = param.get("index")
-                    if isinstance(idx, dict) and "value" in idx:
-                        return idx["value"]
+        try:
+            sensors = data.get("sensor") or []
+            for sensor in sensors:
+                if sensor.get("type") == "global air quality index":
+                    param = sensor.get("parameter")
+                    if isinstance(param, dict) and "index" in param:
+                        idx = param.get("index")
+                        if isinstance(idx, dict) and "value" in idx:
+                            return idx["value"]
+        except (TypeError, KeyError, AttributeError):
+            pass
         return None

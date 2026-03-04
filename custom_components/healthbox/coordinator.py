@@ -74,10 +74,19 @@ class HealthboxDataUpdateCoordinator(DataUpdateCoordinator):
         """Update data via library."""
         try:
             await self.api.async_get_data()
+            return self.api
 
         except Healthbox3ApiClientAuthenticationError as exception:
             raise ConfigEntryAuthFailed(exception) from exception
         except Healthbox3ApiClientError as exception:
             raise UpdateFailed(exception) from exception
         except TypeError as exception:
+            LOGGER.warning(
+                "Invalid data structure from API (sensor may not be fully configured): %s. "
+                "Check your Healthbox device configuration and ensure all sensors are connected.",
+                exception
+            )
             raise UpdateFailed(f"Invalid data structure from API: {exception}") from exception
+        except Exception as exception:
+            LOGGER.error("Unexpected error fetching Healthbox data: %s", exception, exc_info=True)
+            raise UpdateFailed(f"Unexpected error: {exception}") from exception
