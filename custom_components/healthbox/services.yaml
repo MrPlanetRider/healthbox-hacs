@@ -1,0 +1,68 @@
+start_room_boost:
+  name: Start Room Boost
+  description: Boost the fans in a specific room.
+  fields:
+    device_id:
+      name: Room
+      description: Room
+      required: true
+      selector:
+        device:
+          integration: healthbox
+          model: Healthbox Room
+    boost_level:
+      name: Level
+      description: The boost %. Default is 100%
+      required: true
+      selector:
+        number:
+          min: 10
+          max: 200
+          step: 5
+          mode: slider
+          unit_of_measurement: "%"
+    boost_timeout:
+      name: Timeout
+      description: Duration of the boost in minutes
+      required: true
+      selector:
+        number:
+          min: 5
+          max: 720
+          step: 1
+          mode: slider
+          unit_of_measurement: minutes
+stop_room_boost:
+  name: Stop Room Boost
+  description: Stops Boosting the fans in a specific room.
+  fields:
+    device_id:
+      name: Room
+      description: Room
+      required: true
+      selector:
+        device:
+          integration: healthbox
+          model: Healthbox Room
+change_room_profile:
+  name: Change Room Profile
+  description: Change the Room Profile
+  fields:
+    device_id:
+      name: Room
+      description: Room
+      required: true
+      selector:
+        device:
+          integration: healthbox
+          model: Healthbox Room
+    profile_name:
+      name: Profile
+      description: Healthbox3 Profile
+      required: true
+      selector:
+        select:
+          options:
+            - "Eco"
+            - "Health"
+            - "Intense"
