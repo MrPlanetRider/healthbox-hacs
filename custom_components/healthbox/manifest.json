@@ -2,7 +2,7 @@
   "domain": "healthbox",
   "name": "Renson Healthbox",
   "codeowners": [
-    "@rmassch"
+    "@MrPlanet"
   ],
   "config_flow": true,
   "dependencies": [],
