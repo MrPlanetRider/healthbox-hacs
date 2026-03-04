@@ -2,7 +2,7 @@
     "config": {
         "step": {
             "user": {
-                "description": "If you need help with the configuration have a look here: https://github.com/MrPlanetRider/healthbox-hacs",
+                "description": "Configure your Renson Healthbox device",
                 "data": {
                     "host": "IP Address",
                     "api_key": "API Key"
