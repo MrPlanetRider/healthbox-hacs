@@ -1,5 +1,5 @@
 {
-    "name": "rmassch/healthbox3",
+    "name": "MrPlanetRider/healthbox-hacs",
     "image": "mcr.microsoft.com/devcontainers/python:3.12",
     "postCreateCommand": "scripts/setup",
     "forwardPorts": [

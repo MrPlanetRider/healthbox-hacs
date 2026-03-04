@@ -2,7 +2,7 @@
     "config": {
         "step": {
             "user": {
-                "description": "Als je hulp nodig hebt bij de configuratie, kijk dan hier: https://github.com/rmassch/healthbox3",
+                "description": "Als je hulp nodig hebt bij de configuratie, kijk dan hier: https://github.com/MrPlanetRider/healthbox-hacs",
                 "data": {
                     "host": "IP-adres",
                     "api_key": "API-sleutel"
