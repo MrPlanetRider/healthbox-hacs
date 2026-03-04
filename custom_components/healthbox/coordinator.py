@@ -81,15 +81,18 @@ class HealthboxDataUpdateCoordinator(DataUpdateCoordinator):
         except Healthbox3ApiClientError as exception:
             raise UpdateFailed(exception) from exception
         except TypeError as exception:
+            # this error occurs when library tries to access an unexpected None value
+            # instead of raising and causing the integration to fail, log and return
+            # the previous data so entities continue to operate with last-known values.
             LOGGER.warning(
-                "Invalid data structure from Healthbox API at %s. "
+                "Invalid data structure from Healthbox API at %s while parsing response: %s. "
                 "Some sensors may not be properly connected to the device. "
-                "Please check your Healthbox device configuration and ensure all sensors are connected. "
-                "This error will be retried on the next update cycle. Error: %s",
+                "Returning last known data and skipping this update.",
                 self.host,
-                exception
+                exception,
             )
-            raise UpdateFailed(f"Invalid data structure from API: {exception}") from exception
+            # do not raise UpdateFailed; provide previous API object instead
+            return self.api
         except Exception as exception:
             LOGGER.error(
                 "Unexpected error fetching Healthbox data from %s: %s",
