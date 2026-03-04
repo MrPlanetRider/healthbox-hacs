@@ -68,83 +68,95 @@ class HealthboxRoomSensorEntityDescription(
 def generate_room_sensors_for_healthbox(
     coordinator: HealthboxDataUpdateCoordinator,
 ) -> list[HealthboxRoomSensorEntityDescription]:
-    """Generate sensors for each room."""
+    """Generate sensors for each room.
+
+    Previously these sensors were only created when the library reported
+    ``advanced_api_enabled`` which required an API key.  That prevented almost
+    everything except the boost binary sensor from ever being added if no key
+    was used.  The data necessary for temperature/humidity/etc. is actually
+    available without "advanced" features, so we remove the gating and instead
+    base creation on the presence of real sensor values.
+    """
     room_sensors: list[HealthboxRoomSensorEntityDescription] = []
-    if coordinator.api.advanced_api_enabled:
-        for room in coordinator.api.rooms:
-            if "indoor temperature" in room.enabled_sensors:
-                room_sensors.append(
-                    HealthboxRoomSensorEntityDescription(
-                        key=f"{room.room_id}_temperature",
-                        name=f"{room.name} Temperature",
-                        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-                        icon="mdi:thermometer",
-                        device_class=SensorDeviceClass.TEMPERATURE,
-                        state_class=SensorStateClass.MEASUREMENT,
-                        room=room,
-                        value_fn=lambda x: x.indoor_temperature,
-                        suggested_display_precision=2,
-                    ),
-                )
-            if "indoor relative humidity" in room.enabled_sensors:
-                room_sensors.append(
-                    HealthboxRoomSensorEntityDescription(
-                        key=f"{room.room_id}_humidity",
-                        name=f"{room.name} Humidity",
-                        native_unit_of_measurement=PERCENTAGE,
-                        icon="mdi:water-percent",
-                        device_class=SensorDeviceClass.HUMIDITY,
-                        state_class=SensorStateClass.MEASUREMENT,
-                        room=room,
-                        value_fn=lambda x: x.indoor_humidity,
-                        suggested_display_precision=2,
-                    ),
-                )
-            if "indoor CO2" in room.enabled_sensors:
-                if room.indoor_co2_concentration is not None:
-                    room_sensors.append(
-                        HealthboxRoomSensorEntityDescription(
-                            key=f"{room.room_id}_co2_concentration",
-                            name=f"{room.name} CO2 Concentration",
-                            native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
-                            icon="mdi:molecule-co2",
-                            device_class=SensorDeviceClass.CO2,
-                            state_class=SensorStateClass.MEASUREMENT,
-                            room=room,
-                            value_fn=lambda x: x.indoor_co2_concentration,
-                            suggested_display_precision=2,
-                        ),
-                    )
-            if "indoor air quality index" in room.enabled_sensors:
-                if room.indoor_aqi is not None:
-                    room_sensors.append(
-                        HealthboxRoomSensorEntityDescription(
-                            key=f"{room.room_id}_aqi",
-                            name=f"{room.name} Air Quality Index",
-                            native_unit_of_measurement=None,
-                            icon="mdi:leaf",
-                            device_class=SensorDeviceClass.AQI,
-                            state_class=SensorStateClass.MEASUREMENT,
-                            room=room,
-                            value_fn=lambda x: x.indoor_aqi,
-                            suggested_display_precision=2,
-                        ),
-                    )
-            if "indoor volatile organic compounds" in room.enabled_sensors:
-                if room.indoor_voc_ppm is not None:
-                    room_sensors.append(
-                        HealthboxRoomSensorEntityDescription(
-                            key=f"{room.room_id}_voc",
-                            name=f"{room.name} Volatile Organic Compounds",
-                            native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
-                            icon="mdi:leaf",
-                            device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS_PARTS,
-                            state_class=SensorStateClass.MEASUREMENT,
-                            room=room,
-                            value_fn=lambda x: x.indoor_voc_ppm,
-                            suggested_display_precision=2,
-                        ),
-                    )
+
+    # iterate all rooms regardless of advanced_api_enabled; we'll still verify
+    # individual sensor data before appending each description
+    for room in coordinator.api.rooms:
+        # temperature
+        if room.indoor_temperature is not None:
+            room_sensors.append(
+                HealthboxRoomSensorEntityDescription(
+                    key=f"{room.room_id}_temperature",
+                    name=f"{room.name} Temperature",
+                    native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+                    icon="mdi:thermometer",
+                    device_class=SensorDeviceClass.TEMPERATURE,
+                    state_class=SensorStateClass.MEASUREMENT,
+                    room=room,
+                    value_fn=lambda x: x.indoor_temperature,
+                    suggested_display_precision=2,
+                ),
+            )
+        # humidity
+        if room.indoor_humidity is not None:
+            room_sensors.append(
+                HealthboxRoomSensorEntityDescription(
+                    key=f"{room.room_id}_humidity",
+                    name=f"{room.name} Humidity",
+                    native_unit_of_measurement=PERCENTAGE,
+                    icon="mdi:water-percent",
+                    device_class=SensorDeviceClass.HUMIDITY,
+                    state_class=SensorStateClass.MEASUREMENT,
+                    room=room,
+                    value_fn=lambda x: x.indoor_humidity,
+                    suggested_display_precision=2,
+                ),
+            )
+        # CO2 concentration
+        if room.indoor_co2_concentration is not None:
+            room_sensors.append(
+                HealthboxRoomSensorEntityDescription(
+                    key=f"{room.room_id}_co2_concentration",
+                    name=f"{room.name} CO2 Concentration",
+                    native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
+                    icon="mdi:molecule-co2",
+                    device_class=SensorDeviceClass.CO2,
+                    state_class=SensorStateClass.MEASUREMENT,
+                    room=room,
+                    value_fn=lambda x: x.indoor_co2_concentration,
+                    suggested_display_precision=2,
+                ),
+            )
+        # Air Quality Index
+        if room.indoor_aqi is not None:
+            room_sensors.append(
+                HealthboxRoomSensorEntityDescription(
+                    key=f"{room.room_id}_aqi",
+                    name=f"{room.name} Air Quality Index",
+                    native_unit_of_measurement=None,
+                    icon="mdi:leaf",
+                    device_class=SensorDeviceClass.AQI,
+                    state_class=SensorStateClass.MEASUREMENT,
+                    room=room,
+                    value_fn=lambda x: x.indoor_aqi,
+                    suggested_display_precision=2,
+                ),
+            )
+        # VOCs
+        if getattr(room, "indoor_voc_ppm", None) is not None:
+            room_sensors.append(
+                HealthboxRoomSensorEntityDescription(
+                    key=f"{room.room_id}_voc",
+                    name=f"{room.name} Volatile Organic Compounds",
+                    native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
+                    icon="mdi:leaf",
+                    device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS_PARTS,
+                    state_class=SensorStateClass.MEASUREMENT,
+                    room=room,
+                    value_fn=lambda x: x.indoor_voc_ppm,
+                    suggested_display_precision=2,
+                ),
+            )
 
     for room in coordinator.api.rooms:
         if room.boost is not None:
