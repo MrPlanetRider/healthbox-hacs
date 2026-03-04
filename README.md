@@ -111,18 +111,18 @@ If you want to contribute to this please read the [Contribution guidelines](CONT
 
 <!-- *** -->
 
-[healthbox]: https://github.com/rmassch/healthbox-hacs
+[healthbox]: https://github.com/MrPlanetRider/healthbox-hacs
 [buymecoffee]: https://www.buymeacoffee.com/ludeeus
 [buymecoffeebadge]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-yellow.svg?style=for-the-badge
-[commits-shield]: https://img.shields.io/github/commit-activity/y/rmassch/healthbox-hacs.svg?style=for-the-badge
-[commits]: https://github.com/rmassch/healthbox-hacs/commits/main
+[commits-shield]: https://img.shields.io/github/commit-activity/y/MrPlanetRider/healthbox-hacs.svg?style=for-the-badge
+[commits]: https://github.com/MrPlanetRider/healthbox-hacs/commits/main
 [hacs]: https://github.com/hacs/integration
 [hacsbadge]: https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge
 [rensonimg]: https://www.renson.eu/Renson/media/Renson-images/renson-logo.png?ext=.png
 [resonurl]: https://www.renson.eu/gd-gb/producten-zoeken/ventilatie/mechanische-ventilatie/units/healthbox-3-0
 [forum-shield]: https://img.shields.io/badge/community-forum-brightgreen.svg?style=for-the-badge
 [forum]: https://community.home-assistant.io/
-[license-shield]: https://img.shields.io/github/license/rmassch/healthbox-hacs.svg?style=for-the-badge
-[maintenance-shield]: https://img.shields.io/badge/maintainer-@rmassch-blue.svg?style=for-the-badge
-[releases-shield]: https://img.shields.io/github/release/rmassch/healthbox-hacs.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/github/license/MrPlanetRider/healthbox-hacs.svg?style=for-the-badge
+[maintenance-shield]: https://img.shields.io/badge/maintainer-@MrPlanetRider-blue.svg?style=for-the-badge
+[releases-shield]: https://img.shields.io/github/release/MrPlanetRider/healthbox-hacs.svg?style=for-the-badge
 [releases]: https://github.com/rmassch/healthbox-hacs/releases
