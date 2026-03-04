@@ -76,12 +76,19 @@ def generate_room_sensors_for_healthbox(
     was used.  The data necessary for temperature/humidity/etc. is actually
     available without "advanced" features, so we remove the gating and instead
     base creation on the presence of real sensor values.
+
+    When the integration is reloaded or updated the sensor list is rebuilt
+    every time.  We log what is being generated so that users can check the
+    Home Assistant log and verify the code actually attempted to create the
+    entities (room list might be empty if data failed to fetch).
     """
     room_sensors: list[HealthboxRoomSensorEntityDescription] = []
+    LOGGER.debug("Generating room sensors; coordinator provides %d rooms", len(coordinator.api.rooms))
 
     # iterate all rooms regardless of advanced_api_enabled; we'll still verify
     # individual sensor data before appending each description
     for room in coordinator.api.rooms:
+        LOGGER.debug("Creating sensors for room %s (id=%s)", room.name, room.room_id)
         # Always create temperature sensor regardless of current data state
         room_sensors.append(
             HealthboxRoomSensorEntityDescription(
@@ -96,6 +103,7 @@ def generate_room_sensors_for_healthbox(
                 suggested_display_precision=2,
             ),
         )
+        LOGGER.debug("Added temperature sensor description for room %s", room.name)
         # Always create humidity sensor regardless of current data state
         room_sensors.append(
             HealthboxRoomSensorEntityDescription(
