@@ -19,6 +19,17 @@ This is still a work in progress. If time permits, I'll try to push this to HACS
 ## Known Issues
 - Missing Branding
 
+## Branding Demo URLs
+
+These are the Home Assistant Brands demo URLs for the `healthbox` domain:
+
+- Icon (no placeholder fallback): https://brands.home-assistant.io/healthbox/icon.png
+- Logo (no placeholder fallback): https://brands.home-assistant.io/healthbox/logo.png
+- Icon (with placeholder fallback): https://brands.home-assistant.io/_/healthbox/icon.png
+- Logo (with placeholder fallback): https://brands.home-assistant.io/_/healthbox/logo.png
+
+If the non-fallback URL returns 404, branding has not been added yet for that domain.
+
 ## Installation
 
 ### HACS
