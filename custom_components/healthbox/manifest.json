@@ -1,7 +1,7 @@
 {
   "domain": "healthbox",
   "name": "Renson Healthbox",
-  "icon": "icon",
+  "icon": "icon.png",
   "codeowners": [
     "@MrPlanetRider"
   ],
