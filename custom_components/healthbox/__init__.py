@@ -9,6 +9,49 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from pyhealthbox3.healthbox3 import Healthbox3
 
+# Monkey-patch pyhealthbox3 to avoid crashes when actuator/sensor parameters are None.
+# The library's Room._get_airflow_ventilation_rate accesses nested keys without
+# checking for None, leading to 'NoneType' errors if an actuator has null
+# parameter. We patch the method to return None instead of raising.
+
+try:
+    from pyhealthbox3.models import Room
+
+    _orig_get_airflow = Room._get_airflow_ventilation_rate
+
+    def _safe_get_airflow(self):
+        try:
+            return _orig_get_airflow(self)
+        except Exception as err:  # catch TypeError, KeyError, etc.
+            LOGGER.warning(
+                "Patched airflow ventilation rate calculation failed for room %s: %s",
+                getattr(self, 'name', '<unknown>'),
+                err,
+            )
+            return None
+
+    Room._get_airflow_ventilation_rate = _safe_get_airflow
+
+    # also patch property to guard further
+    if hasattr(Room, 'airflow_ventilation_rate'):
+        orig_prop = Room.airflow_ventilation_rate.fget
+
+        def _safe_airflow_prop(self):
+            try:
+                return orig_prop(self)
+            except Exception as err:
+                LOGGER.warning(
+                    "Patched airflow ventilation_rate property raised %s for room %s",
+                    err, getattr(self, 'name', '<unknown>')
+                )
+                return None
+
+        Room.airflow_ventilation_rate = property(_safe_airflow_prop)
+except ImportError:
+    # library not available in test environment
+    pass
+
+
 from .const import (
     ALL_SERVICES,
     DOMAIN,
