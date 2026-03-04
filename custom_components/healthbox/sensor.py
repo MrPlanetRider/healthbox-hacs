@@ -138,8 +138,8 @@ def generate_room_sensors_for_healthbox(
         # Always create temperature sensor regardless of current data state
         room_sensors.append(
             HealthboxRoomSensorEntityDescription(
-                key=f"{room.room_id}_temperature",
-                name=f"{room.name} Temperature",
+                key=f"healthbox_{room.room_id}_temperature",
+                name=f"Healthbox {room.name} Temperature",
                 native_unit_of_measurement=UnitOfTemperature.CELSIUS,
                 icon="mdi:thermometer",
                 device_class=SensorDeviceClass.TEMPERATURE,
@@ -153,8 +153,8 @@ def generate_room_sensors_for_healthbox(
         # Always create humidity sensor regardless of current data state
         room_sensors.append(
             HealthboxRoomSensorEntityDescription(
-                key=f"{room.room_id}_humidity",
-                name=f"{room.name} Humidity",
+                key=f"healthbox_{room.room_id}_humidity",
+                name=f"Healthbox {room.name} Humidity",
                 native_unit_of_measurement=PERCENTAGE,
                 icon="mdi:water-percent",
                 device_class=SensorDeviceClass.HUMIDITY,
@@ -167,8 +167,8 @@ def generate_room_sensors_for_healthbox(
         # Always create CO2 sensor regardless of current data state
         room_sensors.append(
             HealthboxRoomSensorEntityDescription(
-                key=f"{room.room_id}_co2_concentration",
-                name=f"{room.name} CO2 Concentration",
+                key=f"healthbox_{room.room_id}_co2_concentration",
+                name=f"Healthbox {room.name} CO2 Concentration",
                 native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
                 icon="mdi:molecule-co2",
                 device_class=SensorDeviceClass.CO2,
@@ -181,8 +181,8 @@ def generate_room_sensors_for_healthbox(
         # Always create AQI sensor regardless of current data state
         room_sensors.append(
             HealthboxRoomSensorEntityDescription(
-                key=f"{room.room_id}_aqi",
-                name=f"{room.name} Air Quality Index",
+                key=f"healthbox_{room.room_id}_aqi",
+                name=f"Healthbox {room.name} Air Quality Index",
                 native_unit_of_measurement=None,
                 icon="mdi:leaf",
                 device_class=SensorDeviceClass.AQI,
@@ -196,8 +196,8 @@ def generate_room_sensors_for_healthbox(
         # (using getattr for safety in case property doesn't exist)
         room_sensors.append(
             HealthboxRoomSensorEntityDescription(
-                key=f"{room.room_id}_voc",
-                name=f"{room.name} Volatile Organic Compounds",
+                key=f"healthbox_{room.room_id}_voc",
+                name=f"Healthbox {room.name} Volatile Organic Compounds",
                 native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
                 icon="mdi:leaf",
                 device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS_PARTS,
@@ -211,8 +211,8 @@ def generate_room_sensors_for_healthbox(
     for room in coordinator.api.rooms:
         room_sensors.append(
             HealthboxRoomSensorEntityDescription(
-                key=f"{room.room_id}_boost_level",
-                name=f"{room.name} Boost Level",
+                key=f"healthbox_{room.room_id}_boost_level",
+                name=f"Healthbox {room.name} Boost Level",
                 native_unit_of_measurement=PERCENTAGE,
                 icon="mdi:fan",
                 # device_class=SensorDeviceClass.,
@@ -224,8 +224,8 @@ def generate_room_sensors_for_healthbox(
         )
         room_sensors.append(
             HealthboxRoomSensorEntityDescription(
-                key=f"{room.room_id}_boost_remaining",
-                name=f"{room.name} Boost Remaining",
+                key=f"healthbox_{room.room_id}_boost_remaining",
+                name=f"Healthbox {room.name} Boost Remaining",
                 native_unit_of_measurement=UnitOfTime.SECONDS,
                 icon="mdi:clock-time-five-outline",
                 state_class=SensorStateClass.MEASUREMENT,
@@ -235,8 +235,8 @@ def generate_room_sensors_for_healthbox(
         )
         room_sensors.append(
             HealthboxRoomSensorEntityDescription(
-                key=f"{room.room_id}_airflow_ventilation_rate",
-                name=f"{room.name} Airflow Ventilation Rate",
+                key=f"healthbox_{room.room_id}_airflow_ventilation_rate",
+                name=f"Healthbox {room.name} Airflow Ventilation Rate",
                 native_unit_of_measurement=PERCENTAGE,
                 icon="mdi:fan",
                 # device_class=SensorDeviceClass.,
@@ -248,8 +248,8 @@ def generate_room_sensors_for_healthbox(
         )
         room_sensors.append(
             HealthboxRoomSensorEntityDescription(
-                key=f"{room.room_id}_profile",
-                name=f"{room.name} Profile",
+                key=f"healthbox_{room.room_id}_profile",
+                name=f"Healthbox {room.name} Profile",
                 icon="mdi:account-box",
                 room=room,
                 value_fn=lambda x: _safe_room_profile_name(x),

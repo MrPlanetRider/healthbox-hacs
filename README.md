@@ -11,24 +11,10 @@
 
 _Integration to integrate with [healthbox][healthbox]._
 
-[![Renson][rensonimg]][resonurl]
-
-## DISCLAIMER
-This is still a work in progress. If time permits, I'll try to push this to HACS or Home Assistant Core.
+[![Renson][rensonimg]][rensonurl]
 
 ## Known Issues
 - Missing Branding
-
-## Branding Demo URLs
-
-These are the Home Assistant Brands demo URLs for the `healthbox` domain:
-
-- Icon (no placeholder fallback): https://brands.home-assistant.io/healthbox/icon.png
-- Logo (no placeholder fallback): https://brands.home-assistant.io/healthbox/logo.png
-- Icon (with placeholder fallback): https://brands.home-assistant.io/_/healthbox/icon.png
-- Logo (with placeholder fallback): https://brands.home-assistant.io/_/healthbox/logo.png
-
-If the non-fallback URL returns 404, branding has not been added yet for that domain.
 
 ## Installation
 
@@ -76,7 +62,7 @@ This integration can only be configured through the UI, and the options below ca
 | key       | default        | required | description                                     |
 | --------- | -------------- | -------- | ----------------------------------------------- |
 | host      | none      | yes      | The IP of the Healthbox 3 device               |
-| api_key      | none           | no      | The API key if you want advanced API features and sensors enabled   |
+| api_key      | none           | yes      | The API key if you want advanced API features and sensors enabled   |
 
 ### API Key
 The API key can be requested through the Renson support. They will give you the key if you send an e-mail to  service@renson.be
@@ -123,14 +109,12 @@ If you want to contribute to this please read the [Contribution guidelines](CONT
 <!-- *** -->
 
 [healthbox]: https://github.com/MrPlanetRider/healthbox-hacs
-[buymecoffee]: https://www.buymeacoffee.com/ludeeus
-[buymecoffeebadge]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-yellow.svg?style=for-the-badge
 [commits-shield]: https://img.shields.io/github/commit-activity/y/MrPlanetRider/healthbox-hacs.svg?style=for-the-badge
 [commits]: https://github.com/MrPlanetRider/healthbox-hacs/commits/main
 [hacs]: https://github.com/hacs/integration
 [hacsbadge]: https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge
 [rensonimg]: https://www.renson.eu/Renson/media/Renson-images/renson-logo.png?ext=.png
-[resonurl]: https://www.renson.eu/gd-gb/producten-zoeken/ventilatie/mechanische-ventilatie/units/healthbox-3-0
+[rensonurl]: https://www.renson.eu/gd-gb/producten-zoeken/ventilatie/mechanische-ventilatie/units/healthbox-3-0
 [forum-shield]: https://img.shields.io/badge/community-forum-brightgreen.svg?style=for-the-badge
 [forum]: https://community.home-assistant.io/
 [license-shield]: https://img.shields.io/github/license/MrPlanetRider/healthbox-hacs.svg?style=for-the-badge
