@@ -65,6 +65,52 @@ class HealthboxRoomSensorEntityDescription(
     """Class describing Healthbox Room sensor entities."""
 
 
+def _safe_airflow_ventilation_percentage(room: HealthboxRoom) -> float | None:
+    """Return airflow ventilation rate in percentage, safely."""
+    try:
+        value = room.airflow_ventilation_rate
+        if value is None:
+            return None
+        return value * 100
+    except Exception as err:
+        LOGGER.debug(
+            "Unable to read airflow ventilation rate for room '%s' (ID: %s): %s",
+            getattr(room, "name", "<unknown>"),
+            getattr(room, "room_id", "<unknown>"),
+            err,
+        )
+        return None
+
+
+def _safe_nested_attr(source: object, *attrs: str) -> float | int | str | Decimal | bool | None:
+    """Safely read nested attributes and return None if unavailable."""
+    try:
+        current = source
+        for attr in attrs:
+            if current is None:
+                return None
+            current = getattr(current, attr, None)
+        return current
+    except Exception as err:
+        LOGGER.debug("Unable to read nested attribute '%s': %s", ".".join(attrs), err)
+        return None
+
+
+def _safe_room_boost_level(room: HealthboxRoom) -> float | None:
+    """Return room boost level safely."""
+    return _safe_nested_attr(room, "boost", "level")
+
+
+def _safe_room_boost_remaining(room: HealthboxRoom) -> int | None:
+    """Return room boost remaining time safely."""
+    return _safe_nested_attr(room, "boost", "remaining")
+
+
+def _safe_room_profile_name(room: HealthboxRoom) -> str | None:
+    """Return room profile name safely."""
+    return _safe_nested_attr(room, "profile_name")
+
+
 def generate_room_sensors_for_healthbox(
     coordinator: HealthboxDataUpdateCoordinator,
 ) -> list[HealthboxRoomSensorEntityDescription]:
@@ -163,55 +209,52 @@ def generate_room_sensors_for_healthbox(
         )
 
     for room in coordinator.api.rooms:
-        if room.boost is not None:
-            room_sensors.append(
-                HealthboxRoomSensorEntityDescription(
-                    key=f"{room.room_id}_boost_level",
-                    name=f"{room.name} Boost Level",
-                    native_unit_of_measurement=PERCENTAGE,
-                    icon="mdi:fan",
-                    # device_class=SensorDeviceClass.,
-                    state_class=SensorStateClass.MEASUREMENT,
-                    room=room,
-                    value_fn=lambda x: x.boost.level,
-                    suggested_display_precision=2,
-                ),
-            )
-            room_sensors.append(
-                HealthboxRoomSensorEntityDescription(
-                    key=f"{room.room_id}_boost_remaining",
-                    name=f"{room.name} Boost Remaining",
-                    native_unit_of_measurement=UnitOfTime.SECONDS,
-                    icon="mdi:clock-time-five-outline",
-                    state_class=SensorStateClass.MEASUREMENT,
-                    room=room,
-                    value_fn=lambda x: x.boost.remaining
-                ),
-            )
-        if room.airflow_ventilation_rate is not None:
-            room_sensors.append(
-                HealthboxRoomSensorEntityDescription(
-                    key=f"{room.room_id}_airflow_ventilation_rate",
-                    name=f"{room.name} Airflow Ventilation Rate",
-                    native_unit_of_measurement=PERCENTAGE,
-                    icon="mdi:fan",
-                    # device_class=SensorDeviceClass.,
-                    state_class=SensorStateClass.MEASUREMENT,
-                    room=room,
-                    value_fn=lambda x: x.airflow_ventilation_rate * 100,
-                    suggested_display_precision=2,
-                ),
-            )
-        if room.profile_name is not None:
-            room_sensors.append(
-                HealthboxRoomSensorEntityDescription(
-                    key=f"{room.room_id}_profile",
-                    name=f"{room.name} Profile",
-                    icon="mdi:account-box",
-                    room=room,
-                    value_fn=lambda x: x.profile_name,
-                ),
-            )
+        room_sensors.append(
+            HealthboxRoomSensorEntityDescription(
+                key=f"{room.room_id}_boost_level",
+                name=f"{room.name} Boost Level",
+                native_unit_of_measurement=PERCENTAGE,
+                icon="mdi:fan",
+                # device_class=SensorDeviceClass.,
+                state_class=SensorStateClass.MEASUREMENT,
+                room=room,
+                value_fn=lambda x: _safe_room_boost_level(x),
+                suggested_display_precision=2,
+            ),
+        )
+        room_sensors.append(
+            HealthboxRoomSensorEntityDescription(
+                key=f"{room.room_id}_boost_remaining",
+                name=f"{room.name} Boost Remaining",
+                native_unit_of_measurement=UnitOfTime.SECONDS,
+                icon="mdi:clock-time-five-outline",
+                state_class=SensorStateClass.MEASUREMENT,
+                room=room,
+                value_fn=lambda x: _safe_room_boost_remaining(x)
+            ),
+        )
+        room_sensors.append(
+            HealthboxRoomSensorEntityDescription(
+                key=f"{room.room_id}_airflow_ventilation_rate",
+                name=f"{room.name} Airflow Ventilation Rate",
+                native_unit_of_measurement=PERCENTAGE,
+                icon="mdi:fan",
+                # device_class=SensorDeviceClass.,
+                state_class=SensorStateClass.MEASUREMENT,
+                room=room,
+                value_fn=lambda x: _safe_airflow_ventilation_percentage(x),
+                suggested_display_precision=2,
+            ),
+        )
+        room_sensors.append(
+            HealthboxRoomSensorEntityDescription(
+                key=f"{room.room_id}_profile",
+                name=f"{room.name} Profile",
+                icon="mdi:account-box",
+                room=room,
+                value_fn=lambda x: _safe_room_profile_name(x),
+            ),
+        )
     return room_sensors
 
 
@@ -243,99 +286,91 @@ def generate_global_sensors_for_healthbox(
             suggested_display_precision=0,
         )
     )
-    if coordinator.api.wifi.status:
-        global_sensors.append(
-            HealthboxGlobalSensorEntityDescription(
-                key="wifi_status",
-                name="WiFi Status",
-                icon="mdi:wifi",
-                value_fn=lambda x: x.wifi.status,
-            )
+    global_sensors.append(
+        HealthboxGlobalSensorEntityDescription(
+            key="wifi_status",
+            name="WiFi Status",
+            icon="mdi:wifi",
+            value_fn=lambda x: _safe_nested_attr(x, "wifi", "status"),
         )
-    if coordinator.api.wifi.internet_connection is not None:
-        global_sensors.append(
-            HealthboxGlobalSensorEntityDescription(
-                key="wifi_internet_connection",
-                name="WiFi Internet Connection",
-                native_unit_of_measurement=None,
-                icon="mdi:web",
-                state_class=SensorStateClass.MEASUREMENT,
-                value_fn=lambda x: x.wifi.internet_connection,
-            )
+    )
+    global_sensors.append(
+        HealthboxGlobalSensorEntityDescription(
+            key="wifi_internet_connection",
+            name="WiFi Internet Connection",
+            native_unit_of_measurement=None,
+            icon="mdi:web",
+            state_class=SensorStateClass.MEASUREMENT,
+            value_fn=lambda x: _safe_nested_attr(x, "wifi", "internet_connection"),
         )
-    if coordinator.api.wifi.ssid:
-        global_sensors.append(
-            HealthboxGlobalSensorEntityDescription(
-                key="wifi_ssid",
-                name="WiFi SSID",
-                icon="mdi:wifi-settings",
-                value_fn=lambda x: x.wifi.ssid,
-            )
+    )
+    global_sensors.append(
+        HealthboxGlobalSensorEntityDescription(
+            key="wifi_ssid",
+            name="WiFi SSID",
+            icon="mdi:wifi-settings",
+            value_fn=lambda x: _safe_nested_attr(x, "wifi", "ssid"),
         )
+    )
 
-    if coordinator.api.fan.voltage is not None:
-        global_sensors.append(
-            HealthboxGlobalSensorEntityDescription(
-                key="fan_voltage",
-                name="Fan Voltage",
-                icon="mdi:sine-wave",
-                native_unit_of_measurement=UnitOfElectricPotential.VOLT,
-                device_class=SensorDeviceClass.VOLTAGE,
-                state_class=SensorStateClass.MEASUREMENT,
-                value_fn=lambda x: x.fan.voltage,
-                suggested_display_precision=2,
-            )
+    global_sensors.append(
+        HealthboxGlobalSensorEntityDescription(
+            key="fan_voltage",
+            name="Fan Voltage",
+            icon="mdi:sine-wave",
+            native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+            device_class=SensorDeviceClass.VOLTAGE,
+            state_class=SensorStateClass.MEASUREMENT,
+            value_fn=lambda x: _safe_nested_attr(x, "fan", "voltage"),
+            suggested_display_precision=2,
         )
-    if coordinator.api.fan.pressure is not None:
-        global_sensors.append(
-            HealthboxGlobalSensorEntityDescription(
-                key="fan_pressure",
-                name="Fan Pressure",
-                icon="mdi:arrow-collapse-vertical",
-                native_unit_of_measurement=UnitOfPressure.PA,
-                device_class=SensorDeviceClass.PRESSURE,
-                state_class=SensorStateClass.MEASUREMENT,
-                value_fn=lambda x: x.fan.pressure,
-                suggested_display_precision=2,
-            )
+    )
+    global_sensors.append(
+        HealthboxGlobalSensorEntityDescription(
+            key="fan_pressure",
+            name="Fan Pressure",
+            icon="mdi:arrow-collapse-vertical",
+            native_unit_of_measurement=UnitOfPressure.PA,
+            device_class=SensorDeviceClass.PRESSURE,
+            state_class=SensorStateClass.MEASUREMENT,
+            value_fn=lambda x: _safe_nested_attr(x, "fan", "pressure"),
+            suggested_display_precision=2,
         )
-    if coordinator.api.fan.flow is not None:
-        global_sensors.append(
-            HealthboxGlobalSensorEntityDescription(
-                key="fan_flow",
-                name="Fan Flow",
-                icon="mdi:wind-power",
-                native_unit_of_measurement=UnitOfVolumeFlowRate.CUBIC_METERS_PER_HOUR,
-                device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
-                state_class=SensorStateClass.MEASUREMENT,
-                value_fn=lambda x: x.fan.flow,
-                suggested_display_precision=2,
-            )
+    )
+    global_sensors.append(
+        HealthboxGlobalSensorEntityDescription(
+            key="fan_flow",
+            name="Fan Flow",
+            icon="mdi:wind-power",
+            native_unit_of_measurement=UnitOfVolumeFlowRate.CUBIC_METERS_PER_HOUR,
+            device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
+            state_class=SensorStateClass.MEASUREMENT,
+            value_fn=lambda x: _safe_nested_attr(x, "fan", "flow"),
+            suggested_display_precision=2,
         )
-    if coordinator.api.fan.power is not None:
-        global_sensors.append(
-            HealthboxGlobalSensorEntityDescription(
-                key="fan_power",
-                name="Fan Power",
-                icon="mdi:flash",
-                native_unit_of_measurement=UnitOfPower.WATT,
-                device_class=SensorDeviceClass.POWER,
-                state_class=SensorStateClass.MEASUREMENT,
-                value_fn=lambda x: x.fan.power,
-                suggested_display_precision=2,
-            )
+    )
+    global_sensors.append(
+        HealthboxGlobalSensorEntityDescription(
+            key="fan_power",
+            name="Fan Power",
+            icon="mdi:flash",
+            native_unit_of_measurement=UnitOfPower.WATT,
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            value_fn=lambda x: _safe_nested_attr(x, "fan", "power"),
+            suggested_display_precision=2,
         )
-    if coordinator.api.fan.rpm is not None:
-        global_sensors.append(
-            HealthboxGlobalSensorEntityDescription(
-                key="fan_rpm",
-                name="Fan RPM",
-                icon="mdi:fan",
-                native_unit_of_measurement=REVOLUTIONS_PER_MINUTE,
-                state_class=SensorStateClass.MEASUREMENT,
-                value_fn=lambda x: x.fan.rpm,
-            )
+    )
+    global_sensors.append(
+        HealthboxGlobalSensorEntityDescription(
+            key="fan_rpm",
+            name="Fan RPM",
+            icon="mdi:fan",
+            native_unit_of_measurement=REVOLUTIONS_PER_MINUTE,
+            state_class=SensorStateClass.MEASUREMENT,
+            value_fn=lambda x: _safe_nested_attr(x, "fan", "rpm"),
         )
+    )
 
     return global_sensors
 
@@ -394,7 +429,15 @@ class HealthboxGlobalSensor(
     @property
     def native_value(self) -> float | int | str | Decimal:
         """Sensor native value."""
-        return self.entity_description.value_fn(self.coordinator.api)
+        try:
+            return self.entity_description.value_fn(self.coordinator.api)
+        except Exception as err:
+            LOGGER.debug(
+                "Unable to read global sensor value '%s': %s",
+                self.entity_description.key,
+                err,
+            )
+            return None
 
 
 class HealthboxRoomSensor(
@@ -443,6 +486,16 @@ class HealthboxRoomSensor(
             LOGGER.error(error_msg)
         else:
             matching_room = matching_room[0]
-            return self.entity_description.value_fn(matching_room)
+            try:
+                return self.entity_description.value_fn(matching_room)
+            except Exception as err:
+                LOGGER.debug(
+                    "Unable to read sensor value '%s' for room '%s' (ID: %s): %s",
+                    self.entity_description.key,
+                    getattr(matching_room, "name", "<unknown>"),
+                    room_id,
+                    err,
+                )
+                return None
 
         return None
