@@ -87,8 +87,18 @@ class HealthboxRoom:
                     temp = param.get("temperature")
                     if isinstance(temp, dict) and "value" in temp:
                         return temp["value"]
-        except (TypeError, KeyError, AttributeError):
-            pass
+            # If we get here, no temperature sensor with data found
+            if self.sensors_data:
+                LOGGER.debug(
+                    "No valid temperature data for room '%s' (ID: %s). "
+                    "Check if sensor is connected to the device.",
+                    self.name, self.room_id
+                )
+        except (TypeError, KeyError, AttributeError) as e:
+            LOGGER.warning(
+                "Error reading temperature for room '%s' (ID: %s): %s",
+                self.name, self.room_id, e
+            )
         return None
 
     @property
@@ -101,8 +111,18 @@ class HealthboxRoom:
                     hum = param.get("humidity")
                     if isinstance(hum, dict) and "value" in hum:
                         return hum["value"]
-        except (TypeError, KeyError, AttributeError):
-            pass
+            # If we get here, no humidity sensor with data found
+            if self.sensors_data:
+                LOGGER.debug(
+                    "No valid humidity data for room '%s' (ID: %s). "
+                    "Check if sensor is connected to the device.",
+                    self.name, self.room_id
+                )
+        except (TypeError, KeyError, AttributeError) as e:
+            LOGGER.warning(
+                "Error reading humidity for room '%s' (ID: %s): %s",
+                self.name, self.room_id, e
+            )
         return None
 
     @property
@@ -115,8 +135,18 @@ class HealthboxRoom:
                     conc = param.get("concentration")
                     if isinstance(conc, dict) and "value" in conc:
                         return conc["value"]
-        except (TypeError, KeyError, AttributeError):
-            pass
+            # If we get here, no CO2 sensor with data found
+            if self.sensors_data:
+                LOGGER.debug(
+                    "No valid CO2 data for room '%s' (ID: %s). "
+                    "Check if sensor is connected to the device.",
+                    self.name, self.room_id
+                )
+        except (TypeError, KeyError, AttributeError) as e:
+            LOGGER.warning(
+                "Error reading CO2 for room '%s' (ID: %s): %s",
+                self.name, self.room_id, e
+            )
         return None
 
     @property
@@ -129,8 +159,18 @@ class HealthboxRoom:
                     idx = param.get("index")
                     if isinstance(idx, dict) and "value" in idx:
                         return idx["value"]
-        except (TypeError, KeyError, AttributeError):
-            pass
+            # If we get here, no AQI sensor with data found
+            if self.sensors_data:
+                LOGGER.debug(
+                    "No valid AQI data for room '%s' (ID: %s). "
+                    "Check if sensor is connected to the device.",
+                    self.name, self.room_id
+                )
+        except (TypeError, KeyError, AttributeError) as e:
+            LOGGER.warning(
+                "Error reading AQI for room '%s' (ID: %s): %s",
+                self.name, self.room_id, e
+            )
         return None
 
 
@@ -171,6 +211,14 @@ class HealthboxDataObject:
                         idx = param.get("index")
                         if isinstance(idx, dict) and "value" in idx:
                             return idx["value"]
-        except (TypeError, KeyError, AttributeError):
-            pass
+            # Log if global AQI sensor exists but has no data
+            for sensor in sensors:
+                if sensor.get("type") == "global air quality index":
+                    LOGGER.debug(
+                        "Global AQI sensor found but has no valid index data. "
+                        "Check device configuration."
+                    )
+                    break
+        except (TypeError, KeyError, AttributeError) as e:
+            LOGGER.warning("Error reading global AQI: %s", e)
         return None

@@ -82,11 +82,19 @@ class HealthboxDataUpdateCoordinator(DataUpdateCoordinator):
             raise UpdateFailed(exception) from exception
         except TypeError as exception:
             LOGGER.warning(
-                "Invalid data structure from API (sensor may not be fully configured): %s. "
-                "Check your Healthbox device configuration and ensure all sensors are connected.",
+                "Invalid data structure from Healthbox API at %s. "
+                "Some sensors may not be properly connected to the device. "
+                "Please check your Healthbox device configuration and ensure all sensors are connected. "
+                "This error will be retried on the next update cycle. Error: %s",
+                self.host,
                 exception
             )
             raise UpdateFailed(f"Invalid data structure from API: {exception}") from exception
         except Exception as exception:
-            LOGGER.error("Unexpected error fetching Healthbox data: %s", exception, exc_info=True)
+            LOGGER.error(
+                "Unexpected error fetching Healthbox data from %s: %s",
+                self.host,
+                exception,
+                exc_info=True
+            )
             raise UpdateFailed(f"Unexpected error: {exception}") from exception
