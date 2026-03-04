@@ -1,15 +1,16 @@
 {
   "domain": "healthbox",
   "name": "Renson Healthbox",
+  "icon": "icon",
   "codeowners": [
-    "@MrPlanet"
+    "@MrPlanetRider"
   ],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/rmassch/healthbox-hacs",
+  "documentation": "https://github.com/MrPlanetRider/healthbox-hacs",
   "homekit": {},
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/rmassch/healthbox-hacs/issues",
+  "issue_tracker": "https://github.com/MrPlanetRider/healthbox-hacs/issues",
   "requirements": [
     "pyhealthbox3==0.0.22"
   ],
