@@ -9,6 +9,8 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from pyhealthbox3.healthbox3 import Healthbox3
 
+from .const import LOGGER
+
 # Monkey-patch pyhealthbox3 to avoid crashes when actuator/sensor parameters are None.
 # The library's Room._get_airflow_ventilation_rate accesses nested keys without
 # checking for None, leading to 'NoneType' errors if an actuator has null
