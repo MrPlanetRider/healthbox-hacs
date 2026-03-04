@@ -38,7 +38,7 @@ This is still a work in progress. If time permits, I'll try to push this to HACS
 1. Navigate to the Integrations section
 1. Click the three dots at the top right
 1. Custom Repositories
-1. Enter the Repository URL: https://github.com/rmassch/healthbox-hacs
+1. Enter the Repository URL: https://github.com/MrPlanetRider/healthbox-hacs/
 1. Select Category -> Integration
 1. Click Add
 1. Close the modal
@@ -125,4 +125,4 @@ If you want to contribute to this please read the [Contribution guidelines](CONT
 [license-shield]: https://img.shields.io/github/license/MrPlanetRider/healthbox-hacs.svg?style=for-the-badge
 [maintenance-shield]: https://img.shields.io/badge/maintainer-@MrPlanetRider-blue.svg?style=for-the-badge
 [releases-shield]: https://img.shields.io/github/release/MrPlanetRider/healthbox-hacs.svg?style=for-the-badge
-[releases]: https://github.com/rmassch/healthbox-hacs/releases
+[releases]: https://github.com/MrPlanetRider/healthbox-hacs/releases
