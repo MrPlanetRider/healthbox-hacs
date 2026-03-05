@@ -261,6 +261,18 @@ def generate_room_sensors_for_healthbox(
     # individual sensor data before appending each description
     for room in coordinator.api.rooms:
         LOGGER.debug("Creating sensors for room %s (id=%s)", room.name, room.room_id)
+        
+        # Debug: Show what properties/attributes the Room object actually has
+        room_attrs = [attr for attr in dir(room) if not attr.startswith('_')]
+        LOGGER.debug("Room object attributes: %s", room_attrs)
+        
+        # Debug: Try to access each expected property
+        for prop_name in ['indoor_temperature', 'indoor_humidity', 'indoor_co2_concentration', 'indoor_aqi', 'airflow_ventilation_rate']:
+            try:
+                value = getattr(room, prop_name, None)
+                LOGGER.debug("Room %s - %s = %s", room.name, prop_name, value)
+            except Exception as err:
+                LOGGER.debug("Room %s - %s raised error: %s", room.name, prop_name, err)
         # Always create temperature sensor regardless of current data state
         room_sensors.append(
             HealthboxRoomSensorEntityDescription(
@@ -271,7 +283,7 @@ def generate_room_sensors_for_healthbox(
                 device_class=SensorDeviceClass.TEMPERATURE,
                 state_class=SensorStateClass.MEASUREMENT,
                 room=room,
-                value_fn=lambda x: _get_room_temperature(x),
+                value_fn=lambda x: x.indoor_temperature,
                 suggested_display_precision=2,
             ),
         )
@@ -286,7 +298,7 @@ def generate_room_sensors_for_healthbox(
                 device_class=SensorDeviceClass.HUMIDITY,
                 state_class=SensorStateClass.MEASUREMENT,
                 room=room,
-                value_fn=lambda x: _get_room_humidity(x),
+                value_fn=lambda x: x.indoor_humidity,
                 suggested_display_precision=2,
             ),
         )
@@ -300,7 +312,7 @@ def generate_room_sensors_for_healthbox(
                 device_class=SensorDeviceClass.CO2,
                 state_class=SensorStateClass.MEASUREMENT,
                 room=room,
-                value_fn=lambda x: _get_room_co2_concentration(x),
+                value_fn=lambda x: x.indoor_co2_concentration,
                 suggested_display_precision=2,
             ),
         )
@@ -314,7 +326,7 @@ def generate_room_sensors_for_healthbox(
                 device_class=SensorDeviceClass.AQI,
                 state_class=SensorStateClass.MEASUREMENT,
                 room=room,
-                value_fn=lambda x: _get_room_aqi(x),
+                value_fn=lambda x: x.indoor_aqi,
                 suggested_display_precision=2,
             ),
         )
@@ -328,7 +340,7 @@ def generate_room_sensors_for_healthbox(
                 device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS_PARTS,
                 state_class=SensorStateClass.MEASUREMENT,
                 room=room,
-                value_fn=lambda x: _get_room_voc(x),
+                value_fn=lambda x: getattr(x, 'indoor_voc_ppm', None),
                 suggested_display_precision=2,
             ),
         )
