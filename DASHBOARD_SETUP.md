@@ -62,6 +62,42 @@ sequence:
 
 Save the script (it will be assigned an entity ID like `script.start_sdb_room_boost`).
 
+Do the same again for the booster stop script.
+
+```yaml
+alias: Stop SDB room boost
+mode: single
+sequence:
+  - action: healthbox.stop_room_boost
+    data:
+      device_id: "dcd20c575972a426358c4c8fdd504b20"
+```
+
+**Important**: Replace `device_id` with the actual device ID of your Healthbox room.
+
+Save the script (it will be assigned an entity ID like `script.stop_sdb_room_boost`).
+
+The last one is needed because **Lovelace** tap_action.service can’t be templated reliably.
+
+```yaml
+alias: Toggle SDB room boost
+mode: single
+sequence:
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: binary_sensor.salle_de_bain_principal_boost_status
+            state: "on"
+        sequence:
+          - service: script.stop_sdb_room_boost
+    default:
+      - service: script.start_sdb_room_boost
+```
+
+**Important**: Replace `entity_id` with the actual device ID of your Healthbox room booster.
+
+Save the script (it will be assigned an entity ID like `script.toggle_sdb_room_boost`).
+
 ## Step 3: Add Controls to Dashboard
 
 Go to your dashboard and add an **Entities** card with:
@@ -95,6 +131,8 @@ Add this as an extra step at the end of your guide to get the **animated fan ico
 ## Step 5A: Add an animated Mushroom "fan" button (spins when boost is running)
 1) Make sure you already have:
 - `script.start_sdb_room_boost` (your working script)
+- `script.stop_sdb_room_boost` (your working script)
+- `script.toggle_sdb_room_boost` (your working script)
 - `binary_sensor.your_room_name_boost_status` (shows `on/off`)
 
 ![Fan Boost Static Example](images/dashboard/fan_boost_example.png)
@@ -118,12 +156,16 @@ cards:
     icon: mdi:fan
     icon_color: >
       {{ 'blue' if is_state('binary_sensor.salle_de_bain_principal_boost_status','on') else 'disabled' }}
+
+    # Tap toggles: Start when OFF, Stop when ON (via your toggle script)
     tap_action:
       action: call-service
-      service: script.start_sdb_room_boost
+      service: script.toggle_sdb_room_boost
+
     hold_action:
       action: more-info
       entity: binary_sensor.salle_de_bain_principal_boost_status
+
     card_mod:
       style: |
         mushroom-shape-icon$:
@@ -167,7 +209,7 @@ cards:
     secondary_info: state
     tap_action:
       action: call-service
-      service: script.start_sdb_room_boost
+      service: script.toggle_sdb_room_boost
     hold_action:
       action: more-info
     card_mod:
@@ -269,6 +311,7 @@ cards:
 - Spins/glows the fan icon only when `binary_sensor.salle_de_bain_principal_boost_status` is `on`
 - Uses `input_number.sdb_boost_level` to pick a faster/slower animation rate
 - Tap runs your working script: `script.start_sdb_room_boost`
+- Tap again runs your stop script: `script.toggle_sdb_room_boost`
 
 If you want, I can also add an optional “Stop boost” action (if Healthbox exposes one) and switch the card to a two-button layout (Start/Stop) in the same HA-Animated-cards style.
 
