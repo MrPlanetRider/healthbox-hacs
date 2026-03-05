@@ -46,7 +46,7 @@ class Healthbox3Room:
         """HB3 Indoor Temperature."""
         temperature = None
         sensor_type: str = "indoor temperature"
-        if self._advanced_features and sensor_type in self.enabled_sensors:
+        if sensor_type in self.enabled_sensors:
             temperature = self._get_sensor_value(sensor_type)
         return temperature
 
@@ -55,7 +55,7 @@ class Healthbox3Room:
         """HB3 Indoor Humidity."""
         humidity = None
         sensor_type: str = "indoor relative humidity" 
-        if self._advanced_features and sensor_type in self.enabled_sensors:
+        if sensor_type in self.enabled_sensors:
             humidity = self._get_sensor_value(sensor_type)
         return humidity
 
@@ -64,7 +64,7 @@ class Healthbox3Room:
         """HB3 Indoor CO2 Concentration."""
         co2_concentration = None
         sensor_type: str = "indoor CO2"
-        if self._advanced_features and sensor_type in self.enabled_sensors:
+        if sensor_type in self.enabled_sensors:
             co2_concentration = self._get_sensor_value(sensor_type)
         return co2_concentration
 
@@ -73,7 +73,7 @@ class Healthbox3Room:
         """HB3 Indoor Air Quality Index."""
         aqi = None
         sensor_type: str = "indoor air quality index"
-        if self._advanced_features and sensor_type in self.enabled_sensors:
+        if sensor_type in self.enabled_sensors:
             aqi = self._get_sensor_value(sensor_type)
         return aqi
 
@@ -82,7 +82,7 @@ class Healthbox3Room:
         """HB3 Volatile Organic Compounds."""
         ppm = None
         sensor_type: str = "indoor volatile organic compounds"
-        if self._advanced_features and sensor_type in self.enabled_sensors:
+        if sensor_type in self.enabled_sensors:
             ppm = self._get_sensor_value(sensor_type)
         return ppm
     
@@ -91,7 +91,7 @@ class Healthbox3Room:
         """HB3 Volatile Organic Compounds."""
         mgpc = None
         sensor_type: str = "indoor volatile organic compounds"
-        if self._advanced_features and sensor_type in self.enabled_sensors:
+        if sensor_type in self.enabled_sensors:
             mgpc = self._get_sensor_value(sensor_type)
             if mgpc:
                 mgpc = mgpc * 1000
