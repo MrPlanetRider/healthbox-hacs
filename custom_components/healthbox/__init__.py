@@ -8,7 +8,7 @@ from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from pyhealthbox3.healthbox3 import Healthbox3
+from .lib.pyhealthbox3.healthbox3 import Healthbox3
 
 from .const import LOGGER
 
@@ -18,7 +18,7 @@ from .const import LOGGER
 # parameter. We patch the method to return None instead of raising.
 
 try:
-    from pyhealthbox3.models import Room
+    from .lib.pyhealthbox3.models import Room
 
     _orig_get_airflow = Room._get_airflow_ventilation_rate
 

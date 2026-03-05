@@ -12,7 +12,7 @@ LOGGER: Logger = getLogger(__package__)
 
 NAME = "Healthbox "
 DOMAIN = "healthbox"
-VERSION = "1.0.9"
+VERSION = "1.1.0"
 MANUFACTURER = "Renson"
 ATTRIBUTION = ""
 SCAN_INTERVAL = timedelta(seconds=5)

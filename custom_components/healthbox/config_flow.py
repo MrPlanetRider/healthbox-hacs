@@ -14,7 +14,7 @@ from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.core import callback
 
 from homeassistant.const import CONF_HOST, CONF_API_KEY
-from pyhealthbox3.healthbox3 import (
+from .lib.pyhealthbox3.healthbox3 import (
     Healthbox3,
     Healthbox3ApiClientAuthenticationError,
     Healthbox3ApiClientCommunicationError,

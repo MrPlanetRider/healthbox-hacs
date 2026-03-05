@@ -12,7 +12,7 @@ from homeassistant.helpers.update_coordinator import (
 from homeassistant.exceptions import ConfigEntryAuthFailed
 
 
-from pyhealthbox3.healthbox3 import (
+from .lib.pyhealthbox3.healthbox3 import (
     Healthbox3,
     Healthbox3ApiClientAuthenticationError,
     Healthbox3ApiClientError,
