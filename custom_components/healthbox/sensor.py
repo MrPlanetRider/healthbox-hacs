@@ -255,60 +255,6 @@ def generate_room_sensors_for_healthbox(
                 value_fn=lambda x: _safe_room_profile_name(x),
             ),
         )
-        # Flow rate sensors
-        room_sensors.append(
-            HealthboxRoomSensorEntityDescription(
-                key=f"healthbox_{room.room_id}_flow_rate",
-                name=f"{room.name} Flow Rate",
-                native_unit_of_measurement=UnitOfVolumeFlowRate.CUBIC_METERS_PER_HOUR,
-                icon="mdi:air-filter",
-                device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
-                state_class=SensorStateClass.MEASUREMENT,
-                room=room,
-                value_fn=lambda x: _safe_nested_attr(x, "flow_rate"),
-                suggested_display_precision=2,
-            ),
-        )
-        room_sensors.append(
-            HealthboxRoomSensorEntityDescription(
-                key=f"healthbox_{room.room_id}_nominal_flow_rate",
-                name=f"{room.name} Nominal Flow Rate",
-                native_unit_of_measurement=UnitOfVolumeFlowRate.CUBIC_METERS_PER_HOUR,
-                icon="mdi:air-filter",
-                device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
-                state_class=SensorStateClass.MEASUREMENT,
-                room=room,
-                value_fn=lambda x: _safe_nested_attr(x, "nominal_flow_rate"),
-                suggested_display_precision=2,
-            ),
-        )
-        # Power/voltage monitoring
-        room_sensors.append(
-            HealthboxRoomSensorEntityDescription(
-                key=f"healthbox_{room.room_id}_measured_power",
-                name=f"{room.name} Measured Power",
-                native_unit_of_measurement=UnitOfPower.WATT,
-                icon="mdi:flash",
-                device_class=SensorDeviceClass.POWER,
-                state_class=SensorStateClass.MEASUREMENT,
-                room=room,
-                value_fn=lambda x: _safe_nested_attr(x, "measured_power"),
-                suggested_display_precision=1,
-            ),
-        )
-        room_sensors.append(
-            HealthboxRoomSensorEntityDescription(
-                key=f"healthbox_{room.room_id}_measured_voltage",
-                name=f"{room.name} Measured Voltage",
-                native_unit_of_measurement=UnitOfElectricPotential.VOLT,
-                icon="mdi:sine-wave",
-                device_class=SensorDeviceClass.VOLTAGE,
-                state_class=SensorStateClass.MEASUREMENT,
-                room=room,
-                value_fn=lambda x: _safe_nested_attr(x, "measured_voltage"),
-                suggested_display_precision=1,
-            ),
-        )
     return room_sensors
 
 
