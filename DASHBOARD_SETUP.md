@@ -3,13 +3,14 @@
 Build a Healthbox dashboard with slider controls, script-based boost actions, and animated fan indicators.
 
 <p align="center">
-  <img src="images/dashboard/dashboard_exemple.png" alt="Dashboard example" width="900">
+  <img src="images/dashboard/fan_boost_example_working.png" alt="Dashboard example" width="900">
 </p>
 
 ## Quick Navigation
 
 | Section | Description |
 | --- | --- |
+| [Requirements](#Requirements) | First install those HACS features |
 | [Step 1: Helpers](#step-1-create-two-slider-helpers) | Create slider inputs for level and timeout |
 | [Step 2: Script](#step-2-create-a-script) | Build a script that calls Healthbox service |
 | [Step 3: Dashboard Card](#step-3-add-controls-to-dashboard) | Add sliders and start button |
@@ -17,9 +18,12 @@ Build a Healthbox dashboard with slider controls, script-based boost actions, an
 | [Step 5A: Animated Button](#step-5a-add-an-animated-mushroom-fan-button-spins-when-boost-is-running) | Simple spinning fan button |
 | [Step 5B: Alternative Style](#step-5b-alternative-animated-running-fan-button-ha-animated-cards-style) | Advanced visual effect |
 
-## Media Preview
+## Requirements
 
-![Fan Boost Example working](images/dashboard/fan_boost_example_working.png)
+Search for those in HACS, install and checkout the videos at [HA-Animated-cards](https://github.com/Anashost/HA-Animated-cards) if needed.
+- Mushroom
+- Mushroom themes
+- card-mod (3 or 4)
 
 ## Step 1: Create Two Slider Helpers
 
@@ -312,8 +316,6 @@ cards:
 - Uses `input_number.sdb_boost_level` to pick a faster/slower animation rate
 - Tap runs your working script: `script.start_sdb_room_boost`
 - Tap again runs your stop script: `script.toggle_sdb_room_boost`
-
-If you want, I can also add an optional “Stop boost” action (if Healthbox exposes one) and switch the card to a two-button layout (Start/Stop) in the same HA-Animated-cards style.
 
 ## Troubleshooting
 
