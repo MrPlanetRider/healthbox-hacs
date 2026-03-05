@@ -70,6 +70,15 @@ and mention your device serial number.
 
 (See: https://community.home-assistant.io/t/renson-healthbox-3-0/52983/57)
 
+Once you received the api key from Renson you will need to add your api key to the Healthbox 3.0.
+Add and replace IP_HB3 with your ip adress from the Healthbox and API KEY with the api key Renson provided you by email.
+
+for Linux:
+curl -X POST http://IP_HB3/v2/api/api_key --data '"API KEY"' -v
+ 
+for Windows:
+curl -X POST http://IP_HB3/v2/api/api_key --data "\"API KEY\"" -v
+
 ## Sensors
 By default:
 * Global Air Quality Index

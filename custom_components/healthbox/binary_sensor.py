@@ -46,9 +46,30 @@ def generate_binary_room_sensors_for_healthbox(
                     key=f"{room.room_id}_boost_status",
                     name=f"{room.name} Boost Status",
                     room=room,
-                    is_on=lambda x: x.boost.enabled
+                    is_on=lambda x: x.boost.enabled if x.boost else False
                 )
             )
+        
+        # Add door binary sensors
+        room_binary_sensors.append(
+            HealthboxRoomBinarySensorEntityDescription(
+                key=f"{room.room_id}_doors_open",
+                name=f"{room.name} Doors Open",
+                room=room,
+                is_on=lambda x: x.doors_open if x.doors_open is not None else False,
+                icon="mdi:door-open"
+            )
+        )
+        
+        room_binary_sensors.append(
+            HealthboxRoomBinarySensorEntityDescription(
+                key=f"{room.room_id}_doors_present",
+                name=f"{room.name} Doors Present",
+                room=room,
+                is_on=lambda x: x.doors_present if x.doors_present is not None else False,
+                icon="mdi:door"
+            )
+        )
 
     return room_binary_sensors
 

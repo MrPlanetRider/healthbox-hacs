@@ -12,7 +12,7 @@ LOGGER: Logger = getLogger(__package__)
 
 NAME = "Healthbox "
 DOMAIN = "healthbox"
-VERSION = "1.0.2"
+VERSION = "1.0.4"
 MANUFACTURER = "Renson"
 ATTRIBUTION = ""
 SCAN_INTERVAL = timedelta(seconds=5)
@@ -74,8 +74,10 @@ class HealthboxRoom:
         self.room_id: int = room_id
         self.name: str = room_data["name"]
         self.type: str = room_data["type"]
-        self.sensors_data: list = room_data["sensor"]
+        self.sensors_data: list = room_data.get("sensor", [])
         self.room_type: str = room_data["type"]
+        self.parameters: dict = room_data.get("parameter", {})
+        self.actuators: list = room_data.get("actuator", [])
 
     @property
     def indoor_temperature(self) -> Decimal:
@@ -129,12 +131,26 @@ class HealthboxRoom:
     def indoor_co2_concentration(self) -> Decimal | None:
         """HB Indoor CO2 Concentration."""
         try:
+            # First, try to find room-specific "indoor CO2" sensor
             for sensor in self.sensors_data:
-                param = sensor.get("parameter")
-                if isinstance(param, dict) and "concentration" in param:
-                    conc = param.get("concentration")
-                    if isinstance(conc, dict) and "value" in conc:
-                        return conc["value"]
+                sensor_type = sensor.get("type", "")
+                if sensor_type == "indoor CO2":
+                    param = sensor.get("parameter")
+                    if isinstance(param, dict) and "concentration" in param:
+                        conc = param.get("concentration")
+                        if isinstance(conc, dict) and "value" in conc:
+                            return conc["value"]
+            
+            # Fall back to "indoor mixed CO2" (shared sensor)
+            for sensor in self.sensors_data:
+                sensor_type = sensor.get("type", "")
+                if sensor_type == "indoor mixed CO2":
+                    param = sensor.get("parameter")
+                    if isinstance(param, dict) and "concentration" in param:
+                        conc = param.get("concentration")
+                        if isinstance(conc, dict) and "value" in conc:
+                            return conc["value"]
+            
             # If we get here, no CO2 sensor with data found
             if self.sensors_data:
                 LOGGER.debug(
@@ -154,11 +170,13 @@ class HealthboxRoom:
         """HB Indoor Air Quality Index."""
         try:
             for sensor in self.sensors_data:
-                param = sensor.get("parameter")
-                if isinstance(param, dict) and "index" in param:
-                    idx = param.get("index")
-                    if isinstance(idx, dict) and "value" in idx:
-                        return idx["value"]
+                sensor_type = sensor.get("type", "")
+                if sensor_type == "indoor air quality index":
+                    param = sensor.get("parameter")
+                    if isinstance(param, dict) and "index" in param:
+                        idx = param.get("index")
+                        if isinstance(idx, dict) and "value" in idx:
+                            return idx["value"]
             # If we get here, no AQI sensor with data found
             if self.sensors_data:
                 LOGGER.debug(
@@ -169,6 +187,125 @@ class HealthboxRoom:
         except (TypeError, KeyError, AttributeError) as e:
             LOGGER.warning(
                 "Error reading AQI for room '%s' (ID: %s): %s",
+                self.name, self.room_id, e
+            )
+        return None
+
+    @property
+    def indoor_voc_ppm(self) -> Decimal | None:
+        """HB Indoor Volatile Organic Compounds in PPM."""
+        try:
+            for sensor in self.sensors_data:
+                sensor_type = sensor.get("type", "")
+                if sensor_type == "indoor volatile organic compounds":
+                    param = sensor.get("parameter")
+                    if isinstance(param, dict) and "concentration" in param:
+                        conc = param.get("concentration")
+                        if isinstance(conc, dict) and "value" in conc:
+                            return conc["value"]
+            # If we get here, no VOC sensor with data found
+            if self.sensors_data:
+                LOGGER.debug(
+                    "No valid VOC data for room '%s' (ID: %s). "
+                    "Check if sensor is connected to the device.",
+                    self.name, self.room_id
+                )
+        except (TypeError, KeyError, AttributeError) as e:
+            LOGGER.warning(
+                "Error reading VOC for room '%s' (ID: %s): %s",
+                self.name, self.room_id, e
+            )
+        return None
+
+    @property
+    def flow_rate(self) -> Decimal | None:
+        """Current airflow rate from actuator (m³/h)."""
+        try:
+            for actuator in self.actuators:
+                if actuator.get("type") == "air valve":
+                    param = actuator.get("parameter")
+                    if isinstance(param, dict) and "flow_rate" in param:
+                        flow = param.get("flow_rate")
+                        if isinstance(flow, dict) and "value" in flow:
+                            return flow["value"]
+        except (TypeError, KeyError, AttributeError) as e:
+            LOGGER.debug(
+                "Error reading flow_rate for room '%s' (ID: %s): %s",
+                self.name, self.room_id, e
+            )
+        return None
+
+    @property
+    def nominal_flow_rate(self) -> Decimal | None:
+        """Nominal/design airflow rate (m³/h)."""
+        try:
+            if "nominal" in self.parameters:
+                nominal = self.parameters.get("nominal")
+                if isinstance(nominal, dict) and "value" in nominal:
+                    return nominal["value"]
+        except (TypeError, KeyError, AttributeError) as e:
+            LOGGER.debug(
+                "Error reading nominal flow rate for room '%s' (ID: %s): %s",
+                self.name, self.room_id, e
+            )
+        return None
+
+    @property
+    def doors_open(self) -> bool | None:
+        """Door open/closed state."""
+        try:
+            if "doors_open" in self.parameters:
+                doors = self.parameters.get("doors_open")
+                if isinstance(doors, dict) and "value" in doors:
+                    return doors["value"]
+        except (TypeError, KeyError, AttributeError) as e:
+            LOGGER.debug(
+                "Error reading doors_open for room '%s' (ID: %s): %s",
+                self.name, self.room_id, e
+            )
+        return None
+
+    @property
+    def doors_present(self) -> bool | None:
+        """Whether room has door sensors."""
+        try:
+            if "doors_present" in self.parameters:
+                doors = self.parameters.get("doors_present")
+                if isinstance(doors, dict) and "value" in doors:
+                    return doors["value"]
+        except (TypeError, KeyError, AttributeError) as e:
+            LOGGER.debug(
+                "Error reading doors_present for room '%s' (ID: %s): %s",
+                self.name, self.room_id, e
+            )
+        return None
+
+    @property
+    def measured_power(self) -> Decimal | None:
+        """Measured power consumption (W)."""
+        try:
+            if "measured_power" in self.parameters:
+                power = self.parameters.get("measured_power")
+                if isinstance(power, dict) and "value" in power:
+                    return power["value"]
+        except (TypeError, KeyError, AttributeError) as e:
+            LOGGER.debug(
+                "Error reading measured_power for room '%s' (ID: %s): %s",
+                self.name, self.room_id, e
+            )
+        return None
+
+    @property
+    def measured_voltage(self) -> Decimal | None:
+        """Measured voltage (V)."""
+        try:
+            if "measured_voltage" in self.parameters:
+                voltage = self.parameters.get("measured_voltage")
+                if isinstance(voltage, dict) and "value" in voltage:
+                    return voltage["value"]
+        except (TypeError, KeyError, AttributeError) as e:
+            LOGGER.debug(
+                "Error reading measured_voltage for room '%s' (ID: %s): %s",
                 self.name, self.room_id, e
             )
         return None
