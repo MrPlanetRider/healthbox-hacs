@@ -63,9 +63,18 @@ class Healthbox3Room:
     def indoor_co2_concentration(self) -> Decimal | None:
         """HB3 Indoor CO2 Concentration."""
         co2_concentration = None
+        
+        # Try "indoor CO2" first
         sensor_type: str = "indoor CO2"
         if sensor_type in self.enabled_sensors:
             co2_concentration = self._get_sensor_value(sensor_type)
+        
+        # Fallback to "indoor mixed CO2" if available
+        if co2_concentration is None:
+            sensor_type = "indoor mixed CO2"
+            if sensor_type in self.enabled_sensors:
+                co2_concentration = self._get_sensor_value(sensor_type)
+        
         return co2_concentration
 
     @property
@@ -145,8 +154,12 @@ class Healthbox3Room:
             return None
         
         try:
-            flow_rate: float = flow_rate_sensors[0]["parameter"]["flow_rate"]["value"]
-        except KeyError:
+            # Check if parameter exists and is not None before accessing nested keys
+            param = flow_rate_sensors[0].get("parameter")
+            if param is None:
+                return None
+            flow_rate: float = param["flow_rate"]["value"]
+        except (KeyError, TypeError):
             return None
 
 
@@ -160,15 +173,24 @@ class Healthbox3Room:
             "indoor volatile organic compounds": "concentration",
             "indoor air quality index": "index",
             "indoor CO2": "concentration",
+            "indoor mixed CO2": "concentration",
             "indoor relative humidity": "humidity",
             "indoor temperature": "temperature"
         }
-        sensor: dict = [sensor for sensor in self.sensors_data if sensor_type in sensor["type"]][0]
-        sensor_key = sensor_type_keys[sensor_type]
-        valid = self._validate_sensor(sensor, sensor_key=sensor_key)
-        if valid:
-            return sensor["parameter"][sensor_key]["value"]
-        else:
+        try:
+            matching_sensors = [sensor for sensor in self.sensors_data if sensor_type in sensor["type"]]
+            if not matching_sensors:
+                return None
+            sensor: dict = matching_sensors[0]
+            sensor_key = sensor_type_keys.get(sensor_type)
+            if sensor_key is None:
+                return None
+            valid = self._validate_sensor(sensor, sensor_key=sensor_key)
+            if valid:
+                return sensor["parameter"][sensor_key]["value"]
+            else:
+                return None
+        except (KeyError, IndexError, TypeError):
             return None
 
 
