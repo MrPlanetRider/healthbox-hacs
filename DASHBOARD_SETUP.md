@@ -1,12 +1,26 @@
 # Dashboard Setup Guide
 
-This guide shows how to create a dashboard with controls for Healthbox room boost functionality.
+Build a Healthbox dashboard with slider controls, script-based boost actions, and animated fan indicators.
 
-## Media Files
+<p align="center">
+  <img src="images/dashboard/dashboard_exemple.png" alt="Dashboard example" width="900">
+</p>
 
-Current media used in this guide:
-![Dashboard Example](images/dashboard/dashboard_exemple.png)
+## Quick Navigation
+
+| Section | Description |
+| --- | --- |
+| [Step 1: Helpers](#step-1-create-two-slider-helpers) | Create slider inputs for level and timeout |
+| [Step 2: Script](#step-2-create-a-script) | Build a script that calls Healthbox service |
+| [Step 3: Dashboard Card](#step-3-add-controls-to-dashboard) | Add sliders and start button |
+| [Step 4: Test](#step-4-test) | Validate end-to-end flow |
+| [Step 5A: Animated Button](#step-5a-add-an-animated-mushroom-fan-button-spins-when-boost-is-running) | Simple spinning fan button |
+| [Step 5B: Alternative Style](#step-5b-alternative-animated-running-fan-button-ha-animated-cards-style) | Advanced visual effect |
+
+## Media Preview
+
 ![Fan Boost Example](images/dashboard/fan_boost_example.png)
+
 ![Fan Boost Spinning Example](images/dashboard/fan_boost_example_spinning.gif)
 
 ## Step 1: Create Two Slider Helpers
@@ -54,7 +68,7 @@ Save the script (it will be assigned an entity ID like `script.start_sdb_room_bo
 
 Go to your dashboard and add an **Entities** card with:
 
-![Dashboard Card Example](images/dashboard/dashboard_exemple.png)
+![Dashboard Card Example](images/dashboard/fan_boost_example_no_anime.png)
 
 ```yaml
 type: entities
@@ -80,14 +94,12 @@ entities:
 
 Add this as an extra step at the end of your guide to get the **animated fan icon button** while keeping the sliders.
 
-## Step 5 — Add an animated Mushroom “fan” button (spins when boost is running)
+## Step 5A: Add an animated Mushroom "fan" button (spins when boost is running)
 1) Make sure you already have:
 - `script.start_sdb_room_boost` (your working script)
-- `binary_sensor.salle_de_bain_principal_boost_status` (shows `on/off`)
+- `binary_sensor.your_room_name_boost_status` (shows `on/off`)
 
 ![Fan Boost Static Example](images/dashboard/fan_boost_example.png)
-
-![Fan Boost Spinning Example](images/dashboard/fan_boost_example_spinning.gif)
 
 2) Add this card to your dashboard (it keeps the sliders and adds an animated Mushroom button):
 
@@ -131,9 +143,11 @@ cards:
 
 This keeps your “set % + minutes with sliders” workflow, and gives you a clear visual indicator (spinning fan) whenever the boost status sensor is `on`.
 
-## Step 5 (Alternative) — Animated “running fan” button (HA-Animated-cards style)
+## Step 5B: Alternative animated "running fan" Mushroom Entity Card button (HA-Animated-cards style)
 
-This is an alternative to the simple spinning icon. It uses the same **card_mod + Mushroom** animation style popularized in **@Anashost/HA-Animated-cards** (fan “turbine” spin + glow), and it animates only when your boost status is running (`on`).  
+![Fan Boost Spinning Example](images/dashboard/fan_boost_example_spinning.gif)
+
+This is an alternative to the simple spinning icon. It uses the same **card_mod + Mushroom** animation style popularized in **@Anashost/HA-Animated-cards** (fan “turbine” spin + glow), and it animates only when your boost status is running (`on`) and shows the remaining boost time (seconds) aligned to the right of the name line.
 
 Add this **below your sliders** (keep Steps 1–4 the same).
 
@@ -146,10 +160,9 @@ cards:
         name: Boost level (%)
       - entity: input_number.sdb_boost_timeout
         name: Boost timeout (min)
-
   - type: custom:mushroom-entity-card
     entity: binary_sensor.salle_de_bain_principal_boost_status
-    name: Room boost
+    name: Salle de bain principal
     icon: mdi:fan
     icon_color: blue
     primary_info: name
@@ -161,18 +174,39 @@ cards:
       action: more-info
     card_mod:
       style:
+        mushroom-state-info$: |
+          .container {
+            position: relative;
+          }
+
+          /* Create space on the right for remaining time */
+          .primary {
+            padding-right: 90px;
+          }
+
+          /* Right side value on same line as NAME */
+          .primary::after {
+            content: "{{ states('sensor.salle_de_bain_principal_boost_remaining') }} sec";
+            position: absolute;
+            right: 0;
+            top: 0;
+            font-weight: 600;
+            font-size: 0.95em;
+            opacity: 0.95;
+          }
         mushroom-shape-icon$: |
           .shape {
-            {# ========== CONFIG (adapted) ========== #}
+            {# ========== USER CONFIG (adapted) ========== #}
             {% set state_entity = 'binary_sensor.salle_de_bain_principal_boost_status' %}
             {% set active_value = 'on' %}
             {% set trigger_active = (states(state_entity) == active_value) %}
 
-            {# Use your boost level helper (1..100) to choose spin speed #}
+            {# use your helper (1..100) to control speed #}
             {% set speed = states('input_number.sdb_boost_level') | int(0) %}
-            {# ====================================== #}
+            {# ========== END USER CONFIG ========== #}
 
             {% if trigger_active %}
+              {# Map boost_level -> animation speed #}
               {% if speed >= 80 %}
                 --shape-animation: fan-turbine 0.5s linear infinite;
                 opacity: 1;

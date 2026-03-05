@@ -3,15 +3,25 @@
 [![GitHub Release][releases-shield]][releases]
 [![GitHub Activity][commits-shield]][commits]
 [![License][license-shield]](LICENSE)
-
 [![hacs][hacsbadge]][hacs]
 ![Project Maintenance][maintenance-shield]
-
 [![Community Forum][forum-shield]][forum]
 
-_Integration to integrate with [healthbox][healthbox]._
+Local integration for Renson Healthbox 3 with sensors, boost controls, and dashboard examples.
 
-[![Renson][rensonimg]][rensonurl]
+<p align="center">
+	<img src="images/dashboard/dashboard_exemple.png" alt="Healthbox dashboard example" width="900">
+</p>
+
+## Quick Navigation
+
+| Section | Description |
+| --- | --- |
+| [Installation](#installation) | Add the integration through HACS and Home Assistant |
+| [Configuration](#configuration) | Host and API key setup |
+| [Sensors](#sensors) | Room and global entities |
+| [Services](#services) | Boost and profile control services |
+| [Dashboard Setup](DASHBOARD_SETUP.md) | Full dashboard walkthrough with GIF examples |
 
 ## Dashboard Setup
 
