@@ -262,17 +262,6 @@ def generate_room_sensors_for_healthbox(
     for room in coordinator.api.rooms:
         LOGGER.debug("Creating sensors for room %s (id=%s)", room.name, room.room_id)
         
-        # Debug: Show what properties/attributes the Room object actually has
-        room_attrs = [attr for attr in dir(room) if not attr.startswith('_')]
-        LOGGER.debug("Room object attributes: %s", room_attrs)
-        
-        # Debug: Try to access each expected property
-        for prop_name in ['indoor_temperature', 'indoor_humidity', 'indoor_co2_concentration', 'indoor_aqi', 'airflow_ventilation_rate']:
-            try:
-                value = getattr(room, prop_name, None)
-                LOGGER.debug("Room %s - %s = %s", room.name, prop_name, value)
-            except Exception as err:
-                LOGGER.debug("Room %s - %s raised error: %s", room.name, prop_name, err)
         # Always create temperature sensor regardless of current data state
         room_sensors.append(
             HealthboxRoomSensorEntityDescription(

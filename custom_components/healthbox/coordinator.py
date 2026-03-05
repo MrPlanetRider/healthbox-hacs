@@ -73,7 +73,6 @@ class HealthboxDataUpdateCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self):
         """Update data via library."""
         try:
-            LOGGER.debug("Fetching Healthbox data, advanced_api_enabled=%s", self.api.advanced_api_enabled)
             await self.api.async_get_data()
             return self.api
 

@@ -201,11 +201,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         session=async_get_clientsession(hass),
     )
     if api_key:
-        LOGGER.debug("API key provided, enabling advanced features")
         await api.async_enable_advanced_api_features()
-        LOGGER.debug("Advanced API features enabled: %s", api.advanced_api_enabled)
-    else:
-        LOGGER.debug("No API key provided, sensor data will be limited")
 
     coordinator = HealthboxDataUpdateCoordinator(
         hass=hass, entry=entry, api=api)
