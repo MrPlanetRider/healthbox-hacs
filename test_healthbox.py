@@ -36,7 +36,7 @@ async def test_healthbox(host: str, api_key: str | None = None):
             if isinstance(raw_data, dict):
                 for key in raw_data:
                     val = raw_data[key]
-                    if isinstance(val, (dict, list)):
+                    if isinstance(val, dict | list):
                         pass
                     else:
                         pass
