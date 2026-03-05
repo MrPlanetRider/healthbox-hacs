@@ -13,6 +13,10 @@ _Integration to integrate with [healthbox][healthbox]._
 
 [![Renson][rensonimg]][rensonurl]
 
+## Dashboard Setup
+
+For a complete dashboard setup with sliders, scripts, and animated fan examples, see [DASHBOARD_SETUP.md](DASHBOARD_SETUP.md).
+
 ## Installation
 
 ### HACS
