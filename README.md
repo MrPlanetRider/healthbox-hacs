@@ -13,9 +13,6 @@ _Integration to integrate with [healthbox][healthbox]._
 
 [![Renson][rensonimg]][rensonurl]
 
-## Known Issues
-- Missing Branding
-
 ## Installation
 
 ### HACS
