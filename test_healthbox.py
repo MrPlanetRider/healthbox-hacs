@@ -34,13 +34,23 @@ async def test_healthbox(host: str, api_key: str | None = None):
     async with ClientSession() as session:
         api = Healthbox3(host=host, api_key=api_key, session=session)
 
-        # Step 1: Test connectivity
-        print("1. Testing connectivity to /v2/api/data/current...")
+        # Step 1: Test connectivity and get raw data
+        print("1. Testing connectivity and dumping raw JSON...")
         try:
-            await api.async_validate_connectivity()
-            print("   ✓ Connectivity OK\n")
+            raw_data = await api.request(method="GET", endpoint="/v2/api/data/current")
+            print("   ✓ Raw data fetched successfully\n")
+            print("   Raw JSON structure:")
+            print(f"   Top-level keys: {list(raw_data.keys()) if isinstance(raw_data, dict) else 'Not a dict'}")
+            if isinstance(raw_data, dict):
+                for key in raw_data:
+                    val = raw_data[key]
+                    if isinstance(val, (dict, list)):
+                        print(f"      {key}: {type(val).__name__} with {len(val)} items")
+                    else:
+                        print(f"      {key}: {type(val).__name__} = {val}")
+            print()
         except Exception as e:
-            print(f"   ✗ Connectivity failed: {e}\n")
+            print(f"   ✗ Failed to fetch raw data: {e}\n")
             return False
 
         # Step 2: Enable advanced features if API key provided
@@ -59,7 +69,11 @@ async def test_healthbox(host: str, api_key: str | None = None):
             await api.async_get_data()
             print("   ✓ Data fetched successfully\n")
         except Exception as e:
-            print(f"   ✗ Failed to fetch data: {e}\n")
+            print(f"   ✗ Failed to fetch data: {e}")
+            print(f"\n   Full traceback:")
+            import traceback
+            traceback.print_exc()
+            print()
             return False
 
         # Step 4: Display device info
