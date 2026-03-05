@@ -13,7 +13,7 @@ from .models import Healthbox3DataObject, Healthbox3Room, Healthbox3RoomBoost, H
 
 _LOGGER = logging.getLogger(__name__)
 
-class Healthbox3():
+class Healthbox3:
     """Healthbox3 Device."""
 
     _session: ClientSession | None
@@ -29,7 +29,7 @@ class Healthbox3():
 
         if api_key:
             self._api_key = api_key
-        
+
     @property
     def advanced_api_enabled(self) -> bool:
         """Return whether advanced api is enabled."""
@@ -49,32 +49,32 @@ class Healthbox3():
     def description(self) -> str:
         """Return the Model Description."""
         return self._data.description
-    
+
     @property
     def warranty_number(self) -> str:
         """Return the warranty number of the device."""
         return self._data.warranty_number
-    
+
     @property
     def global_aqi(self) -> float:
         """Return the global air quality index."""
         return self._data.global_aqi
-    
+
     @property
     def error_count(self) -> int:
         """Return the device error count."""
         return self._data.error_count
-    
+
     @property
     def rooms(self) -> list[Healthbox3Room]:
         """Return all HB3 rooms"""
         return self._data.rooms
-    
+
     @property
     def firmware_version(self) -> str:
         """Return the Firmware Version."""
         return self._data.firmware_version
-    
+
     @property
     def wifi(self) -> Healthbox3WIFIConnectionDataObject:
         """Return the WiFi Data."""
@@ -149,44 +149,44 @@ class Healthbox3():
             return Healthbox3RoomBoost(level=data["level"],enabled=data["enable"],remaining=data["remaining"])
         except:
             return Healthbox3RoomBoost()
-        
+
     async def _async_get_errors(self) -> list[dict] | None:
         """Get errors from the API."""
         try:
             _LOGGER.debug("Retreiving errors")
             data = await self.request(
-                method=METH_GET, endpoint=f"/v2/device/error"
+                method=METH_GET, endpoint="/v2/device/error"
             )
             self._data.error_count = len(data)
             return data
         except:
-            return None  
+            return None
         finally:
             _LOGGER.debug(f"\tError Count: {self._data.error_count}")
 
     async def _async_get_global_core_data(self) -> dict | None:
         """Get global core data from the API."""
         try:
-            
+
             _LOGGER.debug("Retreiving core data")
             data = await self.request(
-                method=METH_GET, endpoint=f"/renson_core/v2/global"
+                method=METH_GET, endpoint="/renson_core/v2/global"
             )
             if "firmware version" in data:
                 self._data.firmware_version = data["firmware version"]
             return data
         except:
-            return None  
+            return None
         finally:
             _LOGGER.debug(f"\tFirmware Version: {self._data.firmware_version}")
 
     async def _async_get_wifi_status(self) -> Healthbox3WIFIConnectionDataObject | None:
         """Get WiFi status from the API."""
         try:
-            
+
             _LOGGER.debug("Retreiving WiFi Status data")
             data = await self.request(
-                method=METH_GET, endpoint=f"/renson_core/v1/wifi/client/status"
+                method=METH_GET, endpoint="/renson_core/v1/wifi/client/status"
             )
             wifi_data = Healthbox3WIFIConnectionDataObject()
 
@@ -194,12 +194,12 @@ class Healthbox3():
             wifi_data.internet_connection = data["internet_connection"] if "internet_connection" in data else None
             wifi_data.ssid = data["ssid"] if "ssid" in data else None
             wifi_data.connection_error = data["connection_error"] if "connection_error" in data else None
-            
+
             self._data.wifi = wifi_data
 
             return wifi_data
         except:
-            return None  
+            return None
         finally:
             _LOGGER.debug(f"\tStatus: {self._data.wifi.status}")
             _LOGGER.debug(f"\tInternet Connection: {self._data.wifi.internet_connection}")
@@ -212,7 +212,7 @@ class Healthbox3():
 
             _LOGGER.debug("Retreiving Fan Status data")
             data = await self.request(
-                method=METH_GET, endpoint=f"/v2/device/fan"
+                method=METH_GET, endpoint="/v2/device/fan"
             )
             fan_data = Healthbox3FanDataObject()
 
@@ -237,7 +237,7 @@ class Healthbox3():
     # async def _async_packages_data(self) -> dict | None:
     #     """Get packages data from the API."""
     #     try:
-            
+
     #         _LOGGER.debug("Retreiving packages data")
     #         data = await self.request(
     #             method=METH_GET, endpoint=f"/renson_core/v1/packages"
@@ -247,13 +247,13 @@ class Healthbox3():
     #             if len(active_app_version) == 1:
     #                 version_object = active_app_version[0]["version"]
     #                 version_object = map(str, version_object)
-                    
+
     #                 version = ".".join(version_object) + f"_{ active_app_version[0]['date']}"
     #                 self._data.app_version = version
     #         return data
     #     except Exception as e:
     #         print(e)
-    #         return None  
+    #         return None
     #     finally:
     #         _LOGGER.debug(f"\tFirmware Version: {self._data.firmware_version}")
 
@@ -326,8 +326,8 @@ class Healthbox3():
 
                 if expect_json_error:
                     return await response.text()
-                return await response.json()    
-                        
+                return await response.json()
+
         except asyncio.TimeoutError as exception:
             raise Healthbox3ApiClientCommunicationError(
                 "Timeout occurred while connecting to the Healthbox device"
@@ -336,19 +336,20 @@ class Healthbox3():
             raise Healthbox3ApiClientError(
                 "Error occurred while communicating with the Healthbox device"
             ) from exception
-        
+
     async def close(self) -> None:
         """Close client session."""
         _LOGGER.debug("Closing clientsession")
         if self._session and self._close_session:
-            await self._session.close()   
+            await self._session.close()
 
     async def __aexit__(self, *_exc_info: any) -> None:
         """Async exit.
         Args:
             _exc_info: Exec type.
+
         """
-        await self.close()        
+        await self.close()
 
 class Healthbox3ApiClientError(Exception):
     """Exception to indicate a general API error."""

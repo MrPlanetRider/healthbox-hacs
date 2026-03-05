@@ -144,7 +144,7 @@ class HealthboxRoom:
                                 self.name, self.room_id, conc["value"]
                             )
                             return conc["value"]
-            
+
             # Fall back to "indoor mixed CO2" (shared sensor)
             for sensor in self.sensors_data:
                 sensor_type = sensor.get("type", "")
@@ -158,7 +158,7 @@ class HealthboxRoom:
                                 self.name, self.room_id, conc["value"]
                             )
                             return conc["value"]
-            
+
             # If we get here, no CO2 sensor with data found
             if self.sensors_data:
                 LOGGER.debug(

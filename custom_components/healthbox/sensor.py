@@ -118,7 +118,7 @@ def _get_room_co2_concentration(room) -> Decimal | None:
         sensors = getattr(room, 'sensor', None) or getattr(room, 'sensors', None)
         if not sensors:
             return None
-        
+
         # First, try to find room-specific "indoor CO2" sensor
         if isinstance(sensors, (list, tuple)):
             for sensor in sensors:
@@ -129,7 +129,7 @@ def _get_room_co2_concentration(room) -> Decimal | None:
                         conc = param.get("concentration")
                         if isinstance(conc, dict) and "value" in conc:
                             return conc["value"]
-        
+
         # Fall back to "indoor mixed CO2" (shared sensor)
         if isinstance(sensors, (list, tuple)):
             for sensor in sensors:
@@ -143,7 +143,7 @@ def _get_room_co2_concentration(room) -> Decimal | None:
     except Exception as err:
         room_name = getattr(room, "name", "<unknown>")
         LOGGER.debug("Error reading CO2 for room '%s': %s", room_name, err)
-    
+
     return None
 
 
@@ -153,7 +153,7 @@ def _get_room_aqi(room) -> Decimal | None:
         sensors = getattr(room, 'sensor', None) or getattr(room, 'sensors', None)
         if not sensors or not isinstance(sensors, (list, tuple)):
             return None
-        
+
         for sensor in sensors:
             sensor_type = sensor.get("type", "") if isinstance(sensor, dict) else getattr(sensor, "type", None)
             if sensor_type == "indoor air quality index":
@@ -165,7 +165,7 @@ def _get_room_aqi(room) -> Decimal | None:
     except Exception as err:
         room_name = getattr(room, "name", "<unknown>")
         LOGGER.debug("Error reading AQI for room '%s': %s", room_name, err)
-    
+
     return None
 
 
@@ -175,7 +175,7 @@ def _get_room_voc(room) -> Decimal | None:
         sensors = getattr(room, 'sensor', None) or getattr(room, 'sensors', None)
         if not sensors or not isinstance(sensors, (list, tuple)):
             return None
-        
+
         for sensor in sensors:
             sensor_type = sensor.get("type", "") if isinstance(sensor, dict) else getattr(sensor, "type", None)
             if sensor_type == "indoor volatile organic compounds":
@@ -187,7 +187,7 @@ def _get_room_voc(room) -> Decimal | None:
     except Exception as err:
         room_name = getattr(room, "name", "<unknown>")
         LOGGER.debug("Error reading VOC for room '%s': %s", room_name, err)
-    
+
     return None
 
 
@@ -197,7 +197,7 @@ def _get_room_temperature(room) -> Decimal | None:
         sensors = getattr(room, 'sensor', None) or getattr(room, 'sensors', None)
         if not sensors or not isinstance(sensors, (list, tuple)):
             return None
-        
+
         for sensor in sensors:
             sensor_type = sensor.get("type", "") if isinstance(sensor, dict) else getattr(sensor, "type", None)
             if sensor_type == "indoor temperature":
@@ -209,7 +209,7 @@ def _get_room_temperature(room) -> Decimal | None:
     except Exception as err:
         room_name = getattr(room, "name", "<unknown>")
         LOGGER.debug("Error reading temperature for room '%s': %s", room_name, err)
-    
+
     return None
 
 
@@ -219,7 +219,7 @@ def _get_room_humidity(room) -> Decimal | None:
         sensors = getattr(room, 'sensor', None) or getattr(room, 'sensors', None)
         if not sensors or not isinstance(sensors, (list, tuple)):
             return None
-        
+
         for sensor in sensors:
             sensor_type = sensor.get("type", "") if isinstance(sensor, dict) else getattr(sensor, "type", None)
             if sensor_type == "indoor relative humidity":
@@ -231,7 +231,7 @@ def _get_room_humidity(room) -> Decimal | None:
     except Exception as err:
         room_name = getattr(room, "name", "<unknown>")
         LOGGER.debug("Error reading humidity for room '%s': %s", room_name, err)
-    
+
     return None
 
 
@@ -261,7 +261,7 @@ def generate_room_sensors_for_healthbox(
     # individual sensor data before appending each description
     for room in coordinator.api.rooms:
         LOGGER.debug("Creating sensors for room %s (id=%s)", room.name, room.room_id)
-        
+
         # Always create temperature sensor regardless of current data state
         room_sensors.append(
             HealthboxRoomSensorEntityDescription(

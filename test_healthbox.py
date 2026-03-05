@@ -14,7 +14,6 @@ import asyncio
 import argparse
 import os
 import sys
-import json
 from pathlib import Path
 
 # Add the custom_components to the path so we can import the library
@@ -70,7 +69,7 @@ async def test_healthbox(host: str, api_key: str | None = None):
             print("   ✓ Data fetched successfully\n")
         except Exception as e:
             print(f"   ✗ Failed to fetch data: {e}")
-            print(f"\n   Full traceback:")
+            print("\n   Full traceback:")
             import traceback
             traceback.print_exc()
             print()
@@ -87,14 +86,14 @@ async def test_healthbox(host: str, api_key: str | None = None):
         # Step 5: Display room data
         print(f"5. Rooms ({len(api.rooms)} found):")
         print(f"   {'-'*56}")
-        
+
         all_success = True
         for room in api.rooms:
             print(f"\n   Room: {room.name} (ID: {room.room_id})")
             print(f"   Type: {room.type}")
             print(f"   Profile: {room.profile_name}")
             print(f"   Enabled Sensors: {room.enabled_sensors}")
-            
+
             # Try to read each sensor
             sensors = {
                 'Temperature': ('indoor_temperature', '°C'),
@@ -105,8 +104,8 @@ async def test_healthbox(host: str, api_key: str | None = None):
                 'VOC (µg/m³)': ('indoor_voc_microg_per_cubic', 'µg/m³'),
                 'Airflow': ('airflow_ventilation_rate', '%'),
             }
-            
-            print(f"\n   Sensor Values:")
+
+            print("\n   Sensor Values:")
             for sensor_name, (prop_name, unit) in sensors.items():
                 try:
                     value = getattr(room, prop_name, None)
@@ -117,9 +116,9 @@ async def test_healthbox(host: str, api_key: str | None = None):
                 except Exception as e:
                     print(f"      {sensor_name:20} ERROR: {e}")
                     all_success = False
-            
+
             # Boost status
-            print(f"\n   Boost Status:")
+            print("\n   Boost Status:")
             if room.boost:
                 print(f"      Enabled: {room.boost.enabled}")
                 print(f"      Level: {room.boost.level}")
@@ -131,7 +130,7 @@ async def test_healthbox(host: str, api_key: str | None = None):
         else:
             print("⚠ Test completed with some errors (see above)")
         print(f"{'='*60}\n")
-        
+
         return all_success
 
 
