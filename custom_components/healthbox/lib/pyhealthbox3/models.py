@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from decimal import Decimal
 
 class Healthbox3RoomBoost:
@@ -26,7 +25,7 @@ class Healthbox3Room:
 
     boost: Healthbox3RoomBoost = Healthbox3RoomBoost()
     enabled_sensors: list[str] = []
-    
+
     def __init__(self, room_id: int, room_data: object, advanced_features: bool = False) -> None:
         """Initialize the HB3 Room."""
         self._advanced_features = advanced_features
@@ -54,7 +53,7 @@ class Healthbox3Room:
     def indoor_humidity(self) -> Decimal | None:
         """HB3 Indoor Humidity."""
         humidity = None
-        sensor_type: str = "indoor relative humidity" 
+        sensor_type: str = "indoor relative humidity"
         if sensor_type in self.enabled_sensors:
             humidity = self._get_sensor_value(sensor_type)
         return humidity
@@ -63,18 +62,18 @@ class Healthbox3Room:
     def indoor_co2_concentration(self) -> Decimal | None:
         """HB3 Indoor CO2 Concentration."""
         co2_concentration = None
-        
+
         # Try "indoor CO2" first
         sensor_type: str = "indoor CO2"
         if sensor_type in self.enabled_sensors:
             co2_concentration = self._get_sensor_value(sensor_type)
-        
+
         # Fallback to "indoor mixed CO2" if available
         if co2_concentration is None:
             sensor_type = "indoor mixed CO2"
             if sensor_type in self.enabled_sensors:
                 co2_concentration = self._get_sensor_value(sensor_type)
-        
+
         return co2_concentration
 
     @property
@@ -94,7 +93,7 @@ class Healthbox3Room:
         if sensor_type in self.enabled_sensors:
             ppm = self._get_sensor_value(sensor_type)
         return ppm
-    
+
     @property
     def indoor_voc_microg_per_cubic(self) -> Decimal | None:
         """HB3 Volatile Organic Compounds."""
@@ -105,7 +104,7 @@ class Healthbox3Room:
             if mgpc:
                 mgpc = mgpc * 1000
         return mgpc
-    
+
     @property
     def airflow_ventilation_rate(self) -> float | None:
         """HB3 Airflow Ventilation Rate."""
@@ -116,7 +115,7 @@ class Healthbox3Room:
     def profile_name(self) -> str | None:
         """HB3 Room Profile Name."""
         return self._profile.capitalize()
-     
+
     def _validate_sensor(self, sensor: dict, sensor_key: str) -> bool:
         """Validate the sensor."""
         valid: bool = False
@@ -125,7 +124,7 @@ class Healthbox3Room:
             "Sensors are sometimes empty ..."
             if sensor_key in sensor["parameter"]:
                 valid =  True
-            
+
         return valid
 
     def _get_airflow_ventilation_rate(self) -> float | None:
@@ -143,7 +142,7 @@ class Healthbox3Room:
         # Offset
         try:
             offset = self._parameters["offset"]["value"]
-        except KeyError:            
+        except KeyError:
             offset = 0
 
         # Flow Rate
@@ -152,7 +151,7 @@ class Healthbox3Room:
         ]
         if len(flow_rate_sensors) == 0:
             return None
-        
+
         try:
             # Check if parameter exists and is not None before accessing nested keys
             param = flow_rate_sensors[0].get("parameter")
@@ -169,7 +168,6 @@ class Healthbox3Room:
     def _get_sensor_value(self, sensor_type: str) -> float | None:
         """Get sensor value."""
         sensor_type_keys: dict = {
-            "indoor volatile organic compounds": "concentration",
             "indoor volatile organic compounds": "concentration",
             "indoor air quality index": "index",
             "indoor CO2": "concentration",
@@ -203,7 +201,7 @@ class Healthbox3WIFIConnectionDataObject:
     connection_error: str = None
 
     def __init__(self, status: str = None, internet_connection: str = None, ssid: str = None, connection_error: str = None) -> None:
-
+        """Initialize Healthbox3 WiFi Connection Data."""
         self.status = status
         self.internet_connection = internet_connection
         self.ssid = ssid
@@ -220,7 +218,7 @@ class Healthbox3FanDataObject:
     rpm: int = None
 
     def __init__(self, voltage: float = None, pressure: float = None, flow: float = None, power: float = None, rpm: int = None) -> None:
-
+        """Initialize Healthbox3 Fan Data."""
         self.voltage = voltage
         self.pressure = pressure
         self.flow = flow
