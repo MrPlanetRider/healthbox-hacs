@@ -4,6 +4,7 @@ from __future__ import annotations
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_KEY, CONF_HOST
 from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
@@ -69,6 +70,121 @@ from .const import (
 from .coordinator import HealthboxDataUpdateCoordinator
 
 
+def _resolve_device_and_coordinator(
+    hass: HomeAssistant, device_id: str
+) -> tuple[dr.DeviceEntry, HealthboxDataUpdateCoordinator]:
+    """Resolve device and coordinator for a service call device_id."""
+    device_registry = dr.async_get(hass)
+    device = device_registry.async_get(device_id)
+    if device is None:
+        raise ServiceValidationError(f"Device not found for device_id '{device_id}'")
+
+    coordinators = hass.data.get(DOMAIN, {})
+    for config_entry_id in device.config_entries:
+        coordinator = coordinators.get(config_entry_id)
+        if coordinator is not None:
+            return device, coordinator
+
+    raise ServiceValidationError(
+        f"No active Healthbox config entry found for device_id '{device_id}'"
+    )
+
+
+def _extract_room_id(device: dr.DeviceEntry) -> int:
+    """Extract the room id from Healthbox device identifiers."""
+    for identifier_domain, identifier in device.identifiers:
+        if identifier_domain != DOMAIN:
+            continue
+        try:
+            return int(identifier.split("_")[-1])
+        except (TypeError, ValueError):
+            continue
+
+    raise ServiceValidationError(
+        "Unable to determine room id from Healthbox device identifiers"
+    )
+
+
+def _register_services(hass: HomeAssistant) -> None:
+    """Register integration services once per domain."""
+
+    async def change_room_profile(call: ServiceCall) -> None:
+        """Service to change the HB3 Room Profile."""
+        device_id = call.data["device_id"]
+        device, coordinator = _resolve_device_and_coordinator(hass, device_id)
+        room_id = _extract_room_id(device)
+        LOGGER.debug(
+            "Service call: %s.%s device_id=%s room_id=%s profile_name=%s",
+            DOMAIN,
+            SERVICE_CHANGE_ROOM_PROFILE,
+            device_id,
+            room_id,
+            call.data["profile_name"],
+        )
+        await coordinator.change_room_profile(
+            room_id=room_id,
+            profile_name=call.data["profile_name"],
+        )
+
+    async def start_room_boost(call: ServiceCall) -> None:
+        """Service call to start boosting fans in a room."""
+        device_id = call.data["device_id"]
+        device, coordinator = _resolve_device_and_coordinator(hass, device_id)
+        room_id = _extract_room_id(device)
+        LOGGER.debug(
+            "Service call: %s.%s device_id=%s room_id=%s boost_level=%s boost_timeout_min=%s",
+            DOMAIN,
+            SERVICE_START_ROOM_BOOST,
+            device_id,
+            room_id,
+            call.data["boost_level"],
+            call.data["boost_timeout"],
+        )
+        await coordinator.start_room_boost(
+            room_id=room_id,
+            boost_level=call.data["boost_level"],
+            boost_timeout=call.data["boost_timeout"] * 60,
+        )
+
+    async def stop_room_boost(call: ServiceCall) -> None:
+        """Service call to stop boosting fans in a room."""
+        device_id = call.data["device_id"]
+        device, coordinator = _resolve_device_and_coordinator(hass, device_id)
+        room_id = _extract_room_id(device)
+        LOGGER.debug(
+            "Service call: %s.%s device_id=%s room_id=%s",
+            DOMAIN,
+            SERVICE_STOP_ROOM_BOOST,
+            device_id,
+            room_id,
+        )
+        await coordinator.stop_room_boost(room_id=room_id)
+
+    if not hass.services.has_service(DOMAIN, SERVICE_START_ROOM_BOOST):
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_START_ROOM_BOOST,
+            start_room_boost,
+            SERVICE_START_ROOM_BOOST_SCHEMA,
+        )
+
+    if not hass.services.has_service(DOMAIN, SERVICE_STOP_ROOM_BOOST):
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_STOP_ROOM_BOOST,
+            stop_room_boost,
+            SERVICE_STOP_ROOM_BOOST_SCHEMA,
+        )
+
+    if not hass.services.has_service(DOMAIN, SERVICE_CHANGE_ROOM_PROFILE):
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_CHANGE_ROOM_PROFILE,
+            change_room_profile,
+            SERVICE_CHANGE_ROOM_PROFILE_SCHEMA,
+        )
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Renson Healthbox from a config entry."""
     api_key = None
@@ -92,61 +208,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
+
+    _register_services(hass)
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    # Define Services
-
-    async def change_room_profile(call: ServiceCall) -> None:
-        """Service to change the HB3 Room Profile."""
-        device_id = call.data["device_id"]
-        device_registry = dr.async_get(hass)
-        device = device_registry.async_get(device_id)
-        if device:
-            device_identifier = next(iter(device.identifiers))[1]
-            room_id: int = int(device_identifier.split("_")[-1])
-            await coordinator.change_room_profile(
-                room_id=room_id,
-                profile_name=call.data["profile_name"]
-            )
-
-    async def start_room_boost(call: ServiceCall) -> None:
-        """Service call to start boosting fans in a room."""
-        device_id = call.data["device_id"]
-        device_registry = dr.async_get(hass)
-        device = device_registry.async_get(device_id)
-
-        if device:
-            device_identifier = next(iter(device.identifiers))[1]
-            room_id: int = int(device_identifier.split("_")[-1])
-            await coordinator.start_room_boost(
-                room_id=room_id,
-                boost_level=call.data["boost_level"],
-                boost_timeout=call.data["boost_timeout"] * 60,
-            )
-
-    async def stop_room_boost(call: ServiceCall) -> None:
-        """Service call to stop boosting fans in a room."""
-        device_id = call.data["device_id"]
-        device_registry = dr.async_get(hass)
-        device = device_registry.async_get(device_id)
-
-        if device:
-            device_identifier = next(iter(device.identifiers))[1]
-            room_id: int = int(device_identifier.split("_")[-1])
-            await coordinator.stop_room_boost(room_id=room_id)
-
-    # Register Services
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_START_ROOM_BOOST,
-        start_room_boost,
-        SERVICE_START_ROOM_BOOST_SCHEMA,
-    )
-    hass.services.async_register(
-        DOMAIN, SERVICE_STOP_ROOM_BOOST, stop_room_boost, SERVICE_STOP_ROOM_BOOST_SCHEMA
-    )
-    hass.services.async_register(DOMAIN, SERVICE_CHANGE_ROOM_PROFILE,
-                                 change_room_profile, SERVICE_CHANGE_ROOM_PROFILE_SCHEMA)
     entry.async_on_unload(entry.add_update_listener(async_update_options))
     return True
 
@@ -159,7 +225,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             del hass.data[DOMAIN]
 
         for service in ALL_SERVICES:
-            hass.services.async_remove(DOMAIN, service)
+            if hass.services.has_service(DOMAIN, service):
+                hass.services.async_remove(DOMAIN, service)
 
     return unload_ok
 

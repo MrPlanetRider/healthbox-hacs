@@ -12,7 +12,7 @@ LOGGER: Logger = getLogger(__package__)
 
 NAME = "Healthbox "
 DOMAIN = "healthbox"
-VERSION = "1.0.1"
+VERSION = "1.0.2"
 MANUFACTURER = "Renson"
 ATTRIBUTION = ""
 SCAN_INTERVAL = timedelta(seconds=5)
@@ -22,7 +22,7 @@ PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
 SERVICE_CHANGE_ROOM_PROFILE = "change_room_profile"
 SERVICE_CHANGE_ROOM_PROFILE_SCHEMA = vol.Schema(
     {
-        vol.Required(cv.CONF_DEVICE_ID): cv.string,
+        vol.Required("device_id"): cv.string,
         vol.Required("profile_name"): cv.string
     }
 )
