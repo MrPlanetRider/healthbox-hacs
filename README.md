@@ -7,10 +7,15 @@
 ![Project Maintenance][maintenance-shield]
 [![Community Forum][forum-shield]][forum]
 
+> **Acknowledgement:** This integration is based on the excellent work from [rmassch/healthbox-hacs](https://github.com/rmassch/healthbox-hacs). Big shout out to rmassch for the initial development. This fork continues maintenance and development with additional features and improvements.
+
 Local integration for Renson Healthbox 3 with sensors, boost controls, and dashboard examples.
 
 <p align="center">
 	<img src="images/dashboard/dashboard_exemple.png" alt="Healthbox dashboard example" width="900">
+</p>
+<p align="center">
+	<img src="images/dashboard/fan_boost_example_working.png" alt="Healthbox dashboard example working" width="900">
 </p>
 
 ## Quick Navigation

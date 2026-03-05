@@ -19,9 +19,7 @@ Build a Healthbox dashboard with slider controls, script-based boost actions, an
 
 ## Media Preview
 
-![Fan Boost Example](images/dashboard/fan_boost_example.png)
-
-![Fan Boost Spinning Example](images/dashboard/fan_boost_example_spinning.gif)
+![Fan Boost Example working](images/dashboard/fan_boost_example_working.png)
 
 ## Step 1: Create Two Slider Helpers
 
