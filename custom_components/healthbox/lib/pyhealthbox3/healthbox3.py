@@ -1,3 +1,5 @@
+"""Healthbox 3 API client."""
+
 from __future__ import annotations
 
 import asyncio
@@ -22,7 +24,7 @@ class Healthbox3:
     _advanced_features: bool = False
 
     def __init__(self, host: str, api_key: str | None = None , session: ClientSession = None) -> None:
-
+        """Initialize Healthbox3 client."""
         self._host: str = host
         self._session = session
         self._close_session = False
@@ -67,7 +69,7 @@ class Healthbox3:
 
     @property
     def rooms(self) -> list[Healthbox3Room]:
-        """Return all HB3 rooms"""
+        """Return all HB3 rooms."""
         return self._data.rooms
 
     @property
@@ -112,7 +114,7 @@ class Healthbox3:
     async def async_change_room_profile(
         self, room_id: int, profile_name
     ) -> any:
-        """Change HB3 Room Profile"""
+        """Change HB3 Room Profile."""
         data = f"{profile_name}".lower()
         await self.request(
             method=METH_PUT,
@@ -147,7 +149,7 @@ class Healthbox3:
                 method=METH_GET, endpoint=f"/v2/api/boost/{room_id}"
             )
             return Healthbox3RoomBoost(level=data["level"],enabled=data["enable"],remaining=data["remaining"])
-        except:
+        except Exception:
             return Healthbox3RoomBoost()
 
     async def _async_get_errors(self) -> list[dict] | None:
@@ -159,7 +161,7 @@ class Healthbox3:
             )
             self._data.error_count = len(data)
             return data
-        except:
+        except Exception:
             return None
         finally:
             _LOGGER.debug(f"\tError Count: {self._data.error_count}")
@@ -175,7 +177,7 @@ class Healthbox3:
             if "firmware version" in data:
                 self._data.firmware_version = data["firmware version"]
             return data
-        except:
+        except Exception:
             return None
         finally:
             _LOGGER.debug(f"\tFirmware Version: {self._data.firmware_version}")
@@ -190,15 +192,15 @@ class Healthbox3:
             )
             wifi_data = Healthbox3WIFIConnectionDataObject()
 
-            wifi_data.status = data["status"] if "status" in data else None
-            wifi_data.internet_connection = data["internet_connection"] if "internet_connection" in data else None
-            wifi_data.ssid = data["ssid"] if "ssid" in data else None
-            wifi_data.connection_error = data["connection_error"] if "connection_error" in data else None
+            wifi_data.status = data.get("status", None)
+            wifi_data.internet_connection = data.get("internet_connection", None)
+            wifi_data.ssid = data.get("ssid", None)
+            wifi_data.connection_error = data.get("connection_error", None)
 
             self._data.wifi = wifi_data
 
             return wifi_data
-        except:
+        except Exception:
             return None
         finally:
             _LOGGER.debug(f"\tStatus: {self._data.wifi.status}")
@@ -216,16 +218,16 @@ class Healthbox3:
             )
             fan_data = Healthbox3FanDataObject()
 
-            fan_data.voltage = data["voltage"] if "voltage" in data else None
-            fan_data.pressure = data["pressure"] if "pressure" in data else None
-            fan_data.flow = data["flow"] if "flow" in data else None
-            fan_data.power = data["power"] if "power" in data else None
-            fan_data.rpm = data["rpm"] if "rpm" in data else None
+            fan_data.voltage = data.get("voltage", None)
+            fan_data.pressure = data.get("pressure", None)
+            fan_data.flow = data.get("flow", None)
+            fan_data.power = data.get("power", None)
+            fan_data.rpm = data.get("rpm", None)
 
             self._data.fan = fan_data
 
             return fan_data
-        except:
+        except Exception:
             return None
         finally:
             _LOGGER.debug(f"\tVoltage: {self._data.fan.voltage}")
@@ -273,7 +275,7 @@ class Healthbox3:
                     expect_json_error=True,
                 )
                 await asyncio.sleep(10)
-                if await self._async_validate_advanced_api_features() == False:
+                if not await self._async_validate_advanced_api_features():
                     await self.close()
                     raise Healthbox3ApiClientAuthenticationError
             else:
@@ -345,6 +347,7 @@ class Healthbox3:
 
     async def __aexit__(self, *_exc_info: any) -> None:
         """Async exit.
+
         Args:
             _exc_info: Exec type.
 

@@ -1,0 +1,5 @@
+# Exclude bundled third-party library
+custom_components/healthbox/lib/
+
+# Exclude test scripts
+test_healthbox.py
