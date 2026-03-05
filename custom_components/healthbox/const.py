@@ -12,7 +12,7 @@ LOGGER: Logger = getLogger(__package__)
 
 NAME = "Healthbox "
 DOMAIN = "healthbox"
-VERSION = "1.0.4"
+VERSION = "1.0.5"
 MANUFACTURER = "Renson"
 ATTRIBUTION = ""
 SCAN_INTERVAL = timedelta(seconds=5)
@@ -139,6 +139,10 @@ class HealthboxRoom:
                     if isinstance(param, dict) and "concentration" in param:
                         conc = param.get("concentration")
                         if isinstance(conc, dict) and "value" in conc:
+                            LOGGER.debug(
+                                "Found specific CO2 sensor for room '%s' (ID: %s): %.1f ppm",
+                                self.name, self.room_id, conc["value"]
+                            )
                             return conc["value"]
             
             # Fall back to "indoor mixed CO2" (shared sensor)
@@ -149,6 +153,10 @@ class HealthboxRoom:
                     if isinstance(param, dict) and "concentration" in param:
                         conc = param.get("concentration")
                         if isinstance(conc, dict) and "value" in conc:
+                            LOGGER.debug(
+                                "Found mixed CO2 sensor for room '%s' (ID: %s): %.1f ppm",
+                                self.name, self.room_id, conc["value"]
+                            )
                             return conc["value"]
             
             # If we get here, no CO2 sensor with data found
