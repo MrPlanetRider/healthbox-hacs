@@ -111,6 +111,132 @@ def _safe_room_profile_name(room: HealthboxRoom) -> str | None:
     return _safe_nested_attr(room, "profile_name")
 
 
+def _get_room_co2_concentration(room) -> Decimal | None:
+    """Extract CO2 concentration from room's sensor data."""
+    try:
+        # Try to get sensors from the room object (works with both our HealthboxRoom and pyhealthbox3 Room)
+        sensors = getattr(room, 'sensor', None) or getattr(room, 'sensors', None)
+        if not sensors:
+            return None
+        
+        # First, try to find room-specific "indoor CO2" sensor
+        if isinstance(sensors, (list, tuple)):
+            for sensor in sensors:
+                sensor_type = sensor.get("type", "") if isinstance(sensor, dict) else getattr(sensor, "type", None)
+                if sensor_type == "indoor CO2":
+                    param = sensor.get("parameter") if isinstance(sensor, dict) else getattr(sensor, "parameter", None)
+                    if isinstance(param, dict) and "concentration" in param:
+                        conc = param.get("concentration")
+                        if isinstance(conc, dict) and "value" in conc:
+                            return conc["value"]
+        
+        # Fall back to "indoor mixed CO2" (shared sensor)
+        if isinstance(sensors, (list, tuple)):
+            for sensor in sensors:
+                sensor_type = sensor.get("type", "") if isinstance(sensor, dict) else getattr(sensor, "type", None)
+                if sensor_type == "indoor mixed CO2":
+                    param = sensor.get("parameter") if isinstance(sensor, dict) else getattr(sensor, "parameter", None)
+                    if isinstance(param, dict) and "concentration" in param:
+                        conc = param.get("concentration")
+                        if isinstance(conc, dict) and "value" in conc:
+                            return conc["value"]
+    except Exception as err:
+        room_name = getattr(room, "name", "<unknown>")
+        LOGGER.debug("Error reading CO2 for room '%s': %s", room_name, err)
+    
+    return None
+
+
+def _get_room_aqi(room) -> Decimal | None:
+    """Extract AQI from room's sensor data."""
+    try:
+        sensors = getattr(room, 'sensor', None) or getattr(room, 'sensors', None)
+        if not sensors or not isinstance(sensors, (list, tuple)):
+            return None
+        
+        for sensor in sensors:
+            sensor_type = sensor.get("type", "") if isinstance(sensor, dict) else getattr(sensor, "type", None)
+            if sensor_type == "indoor air quality index":
+                param = sensor.get("parameter") if isinstance(sensor, dict) else getattr(sensor, "parameter", None)
+                if isinstance(param, dict) and "index" in param:
+                    idx = param.get("index")
+                    if isinstance(idx, dict) and "value" in idx:
+                        return idx["value"]
+    except Exception as err:
+        room_name = getattr(room, "name", "<unknown>")
+        LOGGER.debug("Error reading AQI for room '%s': %s", room_name, err)
+    
+    return None
+
+
+def _get_room_voc(room) -> Decimal | None:
+    """Extract VOC from room's sensor data."""
+    try:
+        sensors = getattr(room, 'sensor', None) or getattr(room, 'sensors', None)
+        if not sensors or not isinstance(sensors, (list, tuple)):
+            return None
+        
+        for sensor in sensors:
+            sensor_type = sensor.get("type", "") if isinstance(sensor, dict) else getattr(sensor, "type", None)
+            if sensor_type == "indoor volatile organic compounds":
+                param = sensor.get("parameter") if isinstance(sensor, dict) else getattr(sensor, "parameter", None)
+                if isinstance(param, dict) and "concentration" in param:
+                    conc = param.get("concentration")
+                    if isinstance(conc, dict) and "value" in conc:
+                        return conc["value"]
+    except Exception as err:
+        room_name = getattr(room, "name", "<unknown>")
+        LOGGER.debug("Error reading VOC for room '%s': %s", room_name, err)
+    
+    return None
+
+
+def _get_room_temperature(room) -> Decimal | None:
+    """Extract temperature from room's sensor data."""
+    try:
+        sensors = getattr(room, 'sensor', None) or getattr(room, 'sensors', None)
+        if not sensors or not isinstance(sensors, (list, tuple)):
+            return None
+        
+        for sensor in sensors:
+            sensor_type = sensor.get("type", "") if isinstance(sensor, dict) else getattr(sensor, "type", None)
+            if sensor_type == "indoor temperature":
+                param = sensor.get("parameter") if isinstance(sensor, dict) else getattr(sensor, "parameter", None)
+                if isinstance(param, dict) and "temperature" in param:
+                    temp = param.get("temperature")
+                    if isinstance(temp, dict) and "value" in temp:
+                        return temp["value"]
+    except Exception as err:
+        room_name = getattr(room, "name", "<unknown>")
+        LOGGER.debug("Error reading temperature for room '%s': %s", room_name, err)
+    
+    return None
+
+
+def _get_room_humidity(room) -> Decimal | None:
+    """Extract humidity from room's sensor data."""
+    try:
+        sensors = getattr(room, 'sensor', None) or getattr(room, 'sensors', None)
+        if not sensors or not isinstance(sensors, (list, tuple)):
+            return None
+        
+        for sensor in sensors:
+            sensor_type = sensor.get("type", "") if isinstance(sensor, dict) else getattr(sensor, "type", None)
+            if sensor_type == "indoor relative humidity":
+                param = sensor.get("parameter") if isinstance(sensor, dict) else getattr(sensor, "parameter", None)
+                if isinstance(param, dict) and "humidity" in param:
+                    hum = param.get("humidity")
+                    if isinstance(hum, dict) and "value" in hum:
+                        return hum["value"]
+    except Exception as err:
+        room_name = getattr(room, "name", "<unknown>")
+        LOGGER.debug("Error reading humidity for room '%s': %s", room_name, err)
+    
+    return None
+
+
+
+
 def generate_room_sensors_for_healthbox(
     coordinator: HealthboxDataUpdateCoordinator,
 ) -> list[HealthboxRoomSensorEntityDescription]:
@@ -145,7 +271,7 @@ def generate_room_sensors_for_healthbox(
                 device_class=SensorDeviceClass.TEMPERATURE,
                 state_class=SensorStateClass.MEASUREMENT,
                 room=room,
-                value_fn=lambda x: x.indoor_temperature,
+                value_fn=lambda x: _get_room_temperature(x),
                 suggested_display_precision=2,
             ),
         )
@@ -160,7 +286,7 @@ def generate_room_sensors_for_healthbox(
                 device_class=SensorDeviceClass.HUMIDITY,
                 state_class=SensorStateClass.MEASUREMENT,
                 room=room,
-                value_fn=lambda x: x.indoor_humidity,
+                value_fn=lambda x: _get_room_humidity(x),
                 suggested_display_precision=2,
             ),
         )
@@ -174,7 +300,7 @@ def generate_room_sensors_for_healthbox(
                 device_class=SensorDeviceClass.CO2,
                 state_class=SensorStateClass.MEASUREMENT,
                 room=room,
-                value_fn=lambda x: x.indoor_co2_concentration,
+                value_fn=lambda x: _get_room_co2_concentration(x),
                 suggested_display_precision=2,
             ),
         )
@@ -188,12 +314,11 @@ def generate_room_sensors_for_healthbox(
                 device_class=SensorDeviceClass.AQI,
                 state_class=SensorStateClass.MEASUREMENT,
                 room=room,
-                value_fn=lambda x: x.indoor_aqi,
+                value_fn=lambda x: _get_room_aqi(x),
                 suggested_display_precision=2,
             ),
         )
         # Always create VOC sensor regardless of current data state
-        # (using getattr for safety in case property doesn't exist)
         room_sensors.append(
             HealthboxRoomSensorEntityDescription(
                 key=f"healthbox_{room.room_id}_voc",
@@ -203,7 +328,7 @@ def generate_room_sensors_for_healthbox(
                 device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS_PARTS,
                 state_class=SensorStateClass.MEASUREMENT,
                 room=room,
-                value_fn=lambda x: getattr(x, 'indoor_voc_ppm', None),
+                value_fn=lambda x: _get_room_voc(x),
                 suggested_display_precision=2,
             ),
         )
