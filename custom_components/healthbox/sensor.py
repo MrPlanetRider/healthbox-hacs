@@ -416,7 +416,7 @@ class HealthboxGlobalSensor(
         self.entity_description = description
         self._attr_unique_id = f"{
             coordinator.config_entry.entry_id}-{description.key}"
-        self._attr_name = f"Healthbox {description.name}"
+        self._attr_name = f"{description.name}"
         self._attr_device_info = DeviceInfo(
             name=f"{coordinator.api.serial}",
             identifiers={(DOMAIN, coordinator.config_entry.entry_id)},
@@ -458,7 +458,7 @@ class HealthboxRoomSensor(
         self.entity_description = description
         self._attr_unique_id = f"{
             coordinator.config_entry.entry_id}-{description.room.room_id}-{description.key}"
-        self._attr_name = f"Healthbox {description.name}"
+        self._attr_name = f"{description.name}"
         self._attr_device_info = DeviceInfo(
             name=self.entity_description.room.name,
             identifiers={
