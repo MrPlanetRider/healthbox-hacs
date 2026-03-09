@@ -1,0 +1,27 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "description": "Configurez votre appareil Renson Healthbox",
+                "data": {
+                    "host": "Adresse IP",
+                    "api_key": "Cle API"
+                }
+            }
+        },
+        "error": {
+            "auth": "La cle API est incorrecte.",
+            "connection": "Impossible de se connecter a l'unite Healthbox 3.",
+            "unknown": "Une erreur inconnue s'est produite."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "api_key": "Cle API"
+                }
+            }
+        }
+    }
+}
